@@ -74,3 +74,22 @@ export interface EmploymentTrendLineChartProps {
   height: number;
   selectedCountryCodes?: string[];
 }
+
+export interface AgeSpecificEmploymentValue {
+  ageGroup: string; // e.g., "15-24", "25-54", "55-64"
+  fullTime: number;
+  partTime: number;
+}
+
+export interface CountryAgeSpecificEmploymentData {
+  countryCode: string;
+  countryName: string;
+  year: number;
+  ageCompositions: AgeSpecificEmploymentValue[];
+}
+
+// For the dropdown
+export interface CountryOption {
+  code: string;
+  name: string;
+}

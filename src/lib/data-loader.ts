@@ -4,7 +4,9 @@ import {
   EmploymentDataPoint,
   RawCsvData,
   CountryTimeSeriesData,
-  TimeSeriesPoint
+  TimeSeriesPoint,
+  CountryAgeSpecificEmploymentData,
+  AgeSpecificEmploymentValue
 } from './types';
 
 // --- PLACEHOLDER IDENTIFIERS ---
@@ -13,6 +15,26 @@ const FULL_TIME_IDENTIFIER_PLACEHOLDER = 'FT'; // Diperbarui dari 'FT_PLACEHOLDE
 const PART_TIME_IDENTIFIER_PLACEHOLDER = 'PT'; // Diperbarui dari 'PT_PLACEHOLDER'
 const TOTAL_SEX_IDENTIFIER_PLACEHOLDER = '_T'; // Contoh: '_T' untuk Total. Konfirmasi ini!
 // --- END OF PLACEHOLDER IDENTIFIERS ---
+
+// Pemetaan untuk nama kelompok usia yang lebih deskriptif
+const AGE_GROUP_MAP: { [key: string]: string } = {
+  'Y15T24': '15-24 tahun',
+  'Y25T54': '25-54 tahun',
+  'Y55T64': '55-64 tahun',
+  'Y65+': '65+ tahun',
+  'Y15T19': '15-19 tahun',
+  'Y20T24': '20-24 tahun',
+  'Y15T29': '15-29 tahun',
+  'Y25+': '25+ tahun',
+  'Y30T34': '30-34 tahun',
+  'Y35T39': '35-39 tahun',
+  'Y40T44': '40-44 tahun',
+  'Y45T49': '45-49 tahun',
+  'Y50T54': '50-54 tahun',
+  'Y55T59': '55-59 tahun',
+  'Y60T64': '60-64 tahun',
+  // Tambahkan pemetaan lain jika ada kelompok usia berbeda di CSV
+};
 
 // Fungsi Transformasi untuk Bar Chart (EmploymentCountryComparisonBar)
 const transformDataForBarChart = (rawData: RawCsvData[]): EmploymentDataPoint[] => {
@@ -151,5 +173,109 @@ export const loadEmploymentTimeSeriesData = async (): Promise<CountryTimeSeriesD
   } catch (error) {
     console.error("Error loading time series data (loadEmploymentTimeSeriesData):", error);
     return [];
+  }
+};
+
+// Fungsi Loader untuk data spesifik usia (Age-specific data)
+export const loadAgeSpecificEmploymentData = async (
+  selectedCountryCode: string
+): Promise<CountryAgeSpecificEmploymentData | null> => {
+  if (!selectedCountryCode) return null;
+  console.log(`[AgeChart] Loading age-specific data for country: ${selectedCountryCode}`);
+
+  try {
+    const csvPath = '/data/SPC,DF_EMPLOYED_FTPT,1.0+A....._T._T..csv';
+    const rawData = await d3.csv(csvPath) as unknown as RawCsvData[];
+
+    if (!rawData || rawData.length === 0) {
+      console.warn("[AgeChart] CSV data not found or empty.");
+      return null;
+    }
+
+    const countryDataFilteredBySex = rawData.filter(
+      d => d.GEO_PICT === selectedCountryCode && d.SEX === TOTAL_SEX_IDENTIFIER_PLACEHOLDER
+    );
+
+    if (countryDataFilteredBySex.length === 0) {
+      console.warn(`[AgeChart] No data found for country ${selectedCountryCode} with SEX='${TOTAL_SEX_IDENTIFIER_PLACEHOLDER}'.`);
+      return null;
+    }
+
+    let latestYear = 0;
+    countryDataFilteredBySex.forEach(d => {
+      const year = parseInt(d.TIME_PERIOD, 10);
+      if (!isNaN(year) && year > latestYear) {
+        latestYear = year;
+      }
+    });
+
+    if (latestYear === 0) {
+      console.warn(`[AgeChart] No valid year found for country ${selectedCountryCode}.`);
+      return null;
+    }
+    console.log(`[AgeChart] Latest year for ${selectedCountryCode}: ${latestYear}`);
+
+    const ageCompositions: AgeSpecificEmploymentValue[] = [];
+    const ageDataForYear = countryDataFilteredBySex.filter(d => parseInt(d.TIME_PERIOD, 10) === latestYear);
+    
+    let countryName = '';
+    if (ageDataForYear.length > 0) {
+        countryName = ageDataForYear[0]['Pacific Island Countries and territories'] || selectedCountryCode;
+    } else if (countryDataFilteredBySex.length > 0) { // Fallback if no data for latest year but country exists
+        countryName = countryDataFilteredBySex[0]['Pacific Island Countries and territories'] || selectedCountryCode;
+    }
+
+
+    const uniqueAgeCodes = Array.from(new Set(ageDataForYear.map(d => d.AGE))).filter(ageCode => ageCode !== '_T' && ageCode !== 'TOTAL'); // Exclude total age indicators
+
+    console.log(`[AgeChart] Unique age codes for ${selectedCountryCode}, year ${latestYear}:`, uniqueAgeCodes);
+
+    uniqueAgeCodes.forEach(ageCode => {
+      const ageGroupSpecificData = ageDataForYear.filter(d => d.AGE === ageCode);
+      if (ageGroupSpecificData.length === 0) return;
+
+      let fullTime = 0;
+      let partTime = 0;
+
+      ageGroupSpecificData.forEach(d => {
+        const obsValue = parseInt(d.OBS_VALUE, 10) || 0;
+        if (d.FTPT === FULL_TIME_IDENTIFIER_PLACEHOLDER) {
+          fullTime += obsValue;
+        } else if (d.FTPT === PART_TIME_IDENTIFIER_PLACEHOLDER) {
+          partTime += obsValue;
+        }
+      });
+      
+      if (fullTime > 0 || partTime > 0) {
+           ageCompositions.push({
+            ageGroup: AGE_GROUP_MAP[ageCode] || ageCode,
+            fullTime,
+            partTime,
+          });
+      }
+    });
+    
+    if (ageCompositions.length === 0) {
+      console.warn(`[AgeChart] No age composition data processed for ${countryName} (${selectedCountryCode}), year ${latestYear}.`);
+      return { // Return with empty compositions if country is valid but no breakdown
+        countryCode: selectedCountryCode,
+        countryName: countryName,
+        year: latestYear,
+        ageCompositions: [],
+      };
+    }
+    
+    console.log(`[AgeChart] Processed age compositions for ${countryName}:`, ageCompositions);
+
+    return {
+      countryCode: selectedCountryCode,
+      countryName: countryName,
+      year: latestYear,
+      ageCompositions,
+    };
+
+  } catch (error) {
+    console.error(`[AgeChart] Error loading age-specific employment data for ${selectedCountryCode}:`, error);
+    return null;
   }
 };

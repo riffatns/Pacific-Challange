@@ -116,6 +116,12 @@ export default function HomePage() {
             .map(c => ({ code: c.countryCode, name: c.countryName }))
             .sort((a,b)=> a.name.localeCompare(b.name));
           setAllCountryCodesForFilter(countryFilters);
+          // Tambahkan ini: Inisialisasi negara yang dipilih untuk line chart
+          if (countryFilters.length > 0) {
+            // Ambil beberapa negara pertama sebagai default, misalnya maksimal 3
+            const defaultSelectedCountries = countryFilters.slice(0, 3).map(cf => cf.code);
+            setSelectedCountriesForLine(defaultSelectedCountries);
+          }
         } else {
           const reason = lineDataResult.status === 'rejected' ? (lineDataResult.reason instanceof Error ? lineDataResult.reason.message : String(lineDataResult.reason)) : 'Data kosong atau tidak valid';
           console.warn(`Gagal memuat data line chart: ${reason}`);
