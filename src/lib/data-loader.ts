@@ -6,7 +6,11 @@ import {
   CountryTimeSeriesData,
   TimeSeriesPoint,
   CountryAgeSpecificEmploymentData,
-  AgeSpecificEmploymentValue
+  AgeSpecificEmploymentValue,
+  CountryGenderEmploymentData,
+  GenderSpecificValue,
+  CountryEmploymentRatioTrend,
+  EmploymentRatioPoint
 } from './types';
 
 // --- PLACEHOLDER IDENTIFIERS ---
@@ -276,6 +280,143 @@ export const loadAgeSpecificEmploymentData = async (
 
   } catch (error) {
     console.error(`[AgeChart] Error loading age-specific employment data for ${selectedCountryCode}:`, error);
+    return null;
+  }
+};
+
+// New data loader for Gender Disparity Chart (Idea 2)
+export const loadGenderEmploymentData = async (
+  countryCode: string,
+  employmentStatus: 'FT' | 'PT' | '_T' // Full-time, Part-time, or Total
+): Promise<CountryGenderEmploymentData | null> => {
+  try {
+    const csvPath = '/data/SPC,DF_EMPLOYED_FTPT,1.0+A....._T._T..csv';
+    const rawData = await d3.csv(csvPath) as unknown as RawCsvData[];
+
+    const countryData = rawData.filter(
+      (row) => 
+        row.GEO_PICT === countryCode && 
+        row.FTPT === employmentStatus &&
+        (row.SEX === 'M' || row.SEX === 'F') && // Only Male or Female, not Total Sex
+        row.AGE === '_T' // All ages
+    );
+
+    if (countryData.length === 0) {
+      console.warn(`No data found for country ${countryCode} with employment status ${employmentStatus} for gender analysis.`);
+      return null;
+    }
+
+    const countryName = countryData[0]['Pacific Island Countries and territories'];
+
+    const trendByYear: { [year: number]: { male: number; female: number } } = {};
+
+    countryData.forEach(row => {
+      const year = parseInt(row.TIME_PERIOD, 10);
+      const value = parseInt(row.OBS_VALUE, 10) || 0;
+
+      if (!trendByYear[year]) {
+        trendByYear[year] = { male: 0, female: 0 };
+      }
+
+      if (row.SEX === 'M') {
+        trendByYear[year].male += value;
+      } else if (row.SEX === 'F') {
+        trendByYear[year].female += value;
+      }
+    });
+
+    const trend: GenderSpecificValue[] = Object.entries(trendByYear)
+      .map(([yearStr, values]) => ({
+        year: parseInt(yearStr, 10),
+        male: values.male,
+        female: values.female,
+      }))
+      .sort((a, b) => a.year - b.year);
+
+    return {
+      countryCode,
+      countryName,
+      trend,
+    };
+
+  } catch (error) {
+    console.error(`Error loading gender employment data for ${countryCode} (${employmentStatus}):`, error);
+    return null;
+  }
+};
+
+// New data loader for Employment Ratio Trends (Idea 3)
+export const loadEmploymentRatioTrendData = async (
+  countryCode: string
+): Promise<CountryEmploymentRatioTrend | null> => {
+  try {
+    const csvPath = '/data/SPC,DF_EMPLOYED_FTPT,1.0+A....._T._T..csv';
+    const rawData = await d3.csv(csvPath) as unknown as RawCsvData[];
+
+    const countryData = rawData.filter(
+      (row) => 
+        row.GEO_PICT === countryCode &&
+        row.SEX === '_T' && // Total for Sex
+        row.AGE === '_T' && // Total for Age
+        (row.FTPT === 'FT' || row.FTPT === 'PT' || row.FTPT === '_T') // Full-time, Part-time, or Total employment
+    );
+
+    if (countryData.length === 0) {
+      console.warn(`No data found for country ${countryCode} for employment ratio trend analysis.`);
+      return null;
+    }
+
+    const countryName = countryData[0]['Pacific Island Countries and territories'];
+    const yearlyData: { 
+      [year: number]: { fullTime: number; partTime: number; total: number } 
+    } = {};
+
+    countryData.forEach(row => {
+      const year = parseInt(row.TIME_PERIOD, 10);
+      const value = parseInt(row.OBS_VALUE, 10) || 0;
+
+      if (!yearlyData[year]) {
+        yearlyData[year] = { fullTime: 0, partTime: 0, total: 0 };
+      }
+
+      if (row.FTPT === 'FT') {
+        yearlyData[year].fullTime = value;
+      } else if (row.FTPT === 'PT') {
+        yearlyData[year].partTime = value;
+      } else if (row.FTPT === '_T') {
+        yearlyData[year].total = value;
+      }
+    });
+
+    const values: EmploymentRatioPoint[] = Object.entries(yearlyData)
+      .map(([yearStr, data]) => {
+        const year = parseInt(yearStr, 10);
+        const total = data.total; // Using the explicitly provided total
+        // If total is not available or zero, calculate from FT+PT, or default to 0 to avoid NaN
+        const effectiveTotal = total > 0 ? total : (data.fullTime + data.partTime);
+        
+        return {
+          year,
+          fullTimePercentage: effectiveTotal > 0 ? (data.fullTime / effectiveTotal) * 100 : 0,
+          partTimePercentage: effectiveTotal > 0 ? (data.partTime / effectiveTotal) * 100 : 0,
+        };
+      })
+      .filter(point => point.fullTimePercentage > 0 || point.partTimePercentage > 0) // Ensure there's some data
+      .sort((a, b) => a.year - b.year);
+
+    if (values.length === 0) {
+      console.warn(`Not enough data to calculate ratios for ${countryCode}`);
+      return null;
+    }
+
+    return {
+      countryCode,
+      countryName,
+      values,
+    };
+
+  } catch (error) {
+    console.error(`Error loading employment ratio trend data for ${countryCode}:`, error);
     return null;
   }
 };

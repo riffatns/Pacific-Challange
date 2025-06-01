@@ -93,3 +93,30 @@ export interface CountryOption {
   code: string;
   name: string;
 }
+
+// Types for Gender Disparity Chart (Idea 2)
+export interface GenderSpecificValue {
+  year: number;
+  male: number;
+  female: number;
+}
+
+export interface CountryGenderEmploymentData {
+  countryCode: string;
+  countryName: string;
+  // employmentStatus: 'FT' | 'PT' | '_T'; // This will be a parameter to the loader
+  trend: GenderSpecificValue[];
+}
+
+// Types for Employment Ratio Trends Chart (Idea 3)
+export interface EmploymentRatioPoint {
+  year: number;
+  fullTimePercentage: number;
+  partTimePercentage: number;
+}
+
+export interface CountryEmploymentRatioTrend {
+  countryCode: string;
+  countryName: string;
+  values: EmploymentRatioPoint[];
+}
