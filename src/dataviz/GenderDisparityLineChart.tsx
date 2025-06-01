@@ -15,7 +15,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    if (!data || !data.values || data.values.length === 0 || width === 0 || height === 0) {
+    if (!data || !data.trend || data.trend.length === 0 || width === 0 || height === 0) {
       d3.select(svgRef.current).selectAll("*").remove(); // Clear previous chart
       return;
     }
@@ -26,11 +26,14 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
     const chartWidth = width - MARGIN.left - MARGIN.right;
     const chartHeight = height - MARGIN.top - MARGIN.bottom;
 
-    const maleData = data.values.filter(d => d.sex === 'Male');
-    const femaleData = data.values.filter(d => d.sex === 'Female');
+    // Data is structured as { year: number, male: number, female: number }[]
+    const trendData = data.trend;
 
-    const allYears = Array.from(new Set([...maleData.map(d => d.year), ...femaleData.map(d => d.year)])).sort(d3.ascending);
-    const allValues = [...maleData.map(d => d.value), ...femaleData.map(d => d.value)];
+    const allYears = Array.from(new Set(trendData.map(d => d.year))).sort(d3.ascending);
+    const allValues = trendData.reduce((acc, d) => {
+      acc.push(d.male, d.female);
+      return acc;
+    }, [] as number[]);
 
     const xScale = d3.scalePoint<number>()
       .domain(allYears)
@@ -74,32 +77,41 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
       .style("fill", "#333")
       .text("Jumlah Pekerja");
 
-    // Line generator
-    const line = d3.line<{ year: number; value: number }>()
+    // Line generator for MALE data
+    const lineMale = d3.line<{ year: number; male: number }>()
       .x(d => xScale(d.year)!)
-      .y(d => yScale(d.value))
+      .y(d => yScale(d.male))
+      .curve(d3.curveMonotoneX);
+
+    // Line generator for FEMALE data
+    const lineFemale = d3.line<{ year: number; female: number }>()
+      .x(d => xScale(d.year)!)
+      .y(d => yScale(d.female))
       .curve(d3.curveMonotoneX);
 
     // Colors
     const colorScale = d3.scaleOrdinal<string>().domain(['Male', 'Female']).range(['#1f77b4', '#ff7f0e']);
 
-    // Draw lines
-    if (maleData.length > 0) {
+    // Draw MALE line
+    const maleLineData = trendData.filter(d => d.male > 0).sort((a, b) => a.year - b.year);
+    if (maleLineData.length > 0) {
       g.append("path")
-        .datum(maleData.sort((a, b) => a.year - b.year))
+        .datum(maleLineData)
         .attr("fill", "none")
         .attr("stroke", colorScale('Male'))
         .attr("stroke-width", 2.5)
-        .attr("d", line);
+        .attr("d", lineMale);
     }
 
-    if (femaleData.length > 0) {
+    // Draw FEMALE line
+    const femaleLineData = trendData.filter(d => d.female > 0).sort((a, b) => a.year - b.year);
+    if (femaleLineData.length > 0) {
       g.append("path")
-        .datum(femaleData.sort((a, b) => a.year - b.year))
+        .datum(femaleLineData)
         .attr("fill", "none")
         .attr("stroke", colorScale('Female'))
         .attr("stroke-width", 2.5)
-        .attr("d", line);
+        .attr("d", lineFemale);
     }
 
     // Tooltip
@@ -116,19 +128,19 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
       .style("color", "black");
 
     // Add circles for data points and tooltips
-    const processSexData = (sexData: typeof maleData, sex: 'Male' | 'Female') => {
-      if (sexData.length > 0) {
-        g.selectAll(`.dot-${sex.toLowerCase()}`)
-          .data(sexData)
+    // For MALE data points
+    if (maleLineData.length > 0) {
+        g.selectAll(".dot-male")
+          .data(maleLineData)
           .enter().append("circle")
-          .attr("class", `dot-${sex.toLowerCase()}`)
+          .attr("class", "dot-male")
           .attr("cx", d => xScale(d.year)!)
-          .attr("cy", d => yScale(d.value))
+          .attr("cy", d => yScale(d.male))
           .attr("r", 5)
-          .style("fill", colorScale(sex))
+          .style("fill", colorScale('Male'))
           .style("cursor", "pointer")
           .on("mouseover", (event, d) => {
-            tooltip.html(`<strong>${sex} (${d.year})</strong><br/>Jumlah: ${d3.format(",")(d.value)}`)
+            tooltip.html(`<strong>Laki-laki (${d.year})</strong><br/>Jumlah: ${d3.format(",")(d.male)}`)
               .style("visibility", "visible");
             d3.select(event.currentTarget).transition().duration(150).attr("r", 7);
           })
@@ -140,12 +152,34 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
             tooltip.style("visibility", "hidden");
             d3.select(event.currentTarget).transition().duration(150).attr("r", 5);
           });
-      }
-    };
-    
-    processSexData(maleData, 'Male');
-    processSexData(femaleData, 'Female');
+    }
 
+    // For FEMALE data points
+    if (femaleLineData.length > 0) {
+        g.selectAll(".dot-female")
+          .data(femaleLineData)
+          .enter().append("circle")
+          .attr("class", "dot-female")
+          .attr("cx", d => xScale(d.year)!)
+          .attr("cy", d => yScale(d.female))
+          .attr("r", 5)
+          .style("fill", colorScale('Female'))
+          .style("cursor", "pointer")
+          .on("mouseover", (event, d) => {
+            tooltip.html(`<strong>Perempuan (${d.year})</strong><br/>Jumlah: ${d3.format(",")(d.female)}`)
+              .style("visibility", "visible");
+            d3.select(event.currentTarget).transition().duration(150).attr("r", 7);
+          })
+          .on("mousemove", (event) => {
+            tooltip.style("top", (event.pageY - 10) + "px")
+                   .style("left", (event.pageX + 10) + "px");
+          })
+          .on("mouseout", (event) => {
+            tooltip.style("visibility", "hidden");
+            d3.select(event.currentTarget).transition().duration(150).attr("r", 5);
+          });
+    }
+    
     // Legend
     const legend = svg.selectAll(".legend")
       .data(['Male', 'Female'])

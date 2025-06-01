@@ -31,8 +31,12 @@ const EmploymentRatioTrendChart: React.FC<EmploymentRatioTrendChartProps> = ({ d
       .range([0, chartWidth])
       .padding(0.5);
 
+    // Ensure d.ratio is treated as number | undefined | null
+    const ratios = data.values.map(d => d.ratio).filter(r => r !== null && r !== undefined && isFinite(r)) as number[];
+    const maxRatio = d3.max(ratios);
+
     const yScale = d3.scaleLinear()
-      .domain([0, d3.max(data.values, d => d.ratio) || 1]) // Max ratio or 1 if no data
+      .domain([0, maxRatio !== undefined ? maxRatio : 1]) // Max ratio or 1 if no data
       .nice()
       .range([chartHeight, 0]);
 
@@ -69,15 +73,19 @@ const EmploymentRatioTrendChart: React.FC<EmploymentRatioTrendChartProps> = ({ d
       .text("Rasio Penuh Waktu / Paruh Waktu");
 
     // Line generator
-    const line = d3.line<{ year: number; ratio: number }>()
+    const line = d3.line<{ year: number; ratio: number | null | undefined }>() // Allow ratio to be null or undefined
       .x(d => xScale(d.year)!)
-      .y(d => yScale(d.ratio))
-      .defined(d => d.ratio !== null && !isNaN(d.ratio)) // Handle potential null/NaN ratios
+      .y(d => d.ratio !== null && d.ratio !== undefined && isFinite(d.ratio) ? yScale(d.ratio) : yScale(0)) // Fallback for y if ratio is invalid, or handle differently
+      .defined(d => d.ratio !== null && d.ratio !== undefined && isFinite(d.ratio)) // Handle potential null/NaN/Infinity ratios
       .curve(d3.curveMonotoneX);
+
+    // Filter data for the line to only include valid, finite ratios
+    const lineData = data.values.filter(d => d.ratio !== null && d.ratio !== undefined && isFinite(d.ratio))
+                                .sort((a,b) => a.year - b.year);
 
     // Draw line
     g.append("path")
-      .datum(data.values.sort((a,b) => a.year - b.year))
+      .datum(lineData as { year: number; ratio: number }[]) // Cast after filtering
       .attr("fill", "none")
       .attr("stroke", "steelblue")
       .attr("stroke-width", 2.5)
@@ -98,7 +106,7 @@ const EmploymentRatioTrendChart: React.FC<EmploymentRatioTrendChartProps> = ({ d
 
     // Add circles for data points and tooltips
     g.selectAll(".dot-ratio")
-      .data(data.values.filter(d => d.ratio !== null && !isNaN(d.ratio)))
+      .data(data.values.filter(d => d.ratio !== null && d.ratio !== undefined && isFinite(d.ratio)) as { year: number; ratio: number; fullTimeCount?: number; partTimeCount?: number }[])
       .enter().append("circle")
       .attr("class", "dot-ratio")
       .attr("cx", d => xScale(d.year)!)
@@ -107,7 +115,7 @@ const EmploymentRatioTrendChart: React.FC<EmploymentRatioTrendChartProps> = ({ d
       .style("fill", "steelblue")
       .style("cursor", "pointer")
       .on("mouseover", (event, d) => {
-        tooltip.html(`<strong>Tahun ${d.year}</strong><br/>Rasio FT/PT: ${d.ratio.toFixed(2)}<br/>(Penuh: ${d3.format(",")(d.fullTime)}, Paruh: ${d3.format(",")(d.partTime)})`)
+        tooltip.html(`<strong>Tahun ${d.year}</strong><br/>Rasio FT/PT: ${d.ratio.toFixed(2)}<br/>(Penuh: ${d3.format(",")(d.fullTimeCount || 0)}, Paruh: ${d3.format(",")(d.partTimeCount || 0)})`)
           .style("visibility", "visible");
         d3.select(event.currentTarget).transition().duration(150).attr("r", 7);
       })

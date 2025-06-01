@@ -289,6 +289,7 @@ export const loadGenderEmploymentData = async (
   countryCode: string,
   employmentStatus: 'FT' | 'PT' | '_T' // Full-time, Part-time, or Total
 ): Promise<CountryGenderEmploymentData | null> => {
+  console.log(`[GenderChart] Loading gender data for country: ${countryCode}, status: ${employmentStatus}`);
   try {
     const csvPath = '/data/SPC,DF_EMPLOYED_FTPT,1.0+A....._T._T..csv';
     const rawData = await d3.csv(csvPath) as unknown as RawCsvData[];
@@ -296,17 +297,19 @@ export const loadGenderEmploymentData = async (
     const countryData = rawData.filter(
       (row) => 
         row.GEO_PICT === countryCode && 
-        row.FTPT === employmentStatus &&
-        (row.SEX === 'M' || row.SEX === 'F') && // Only Male or Female, not Total Sex
+        row.FTPT === employmentStatus && // This should be _T for total employment by gender
+        (row.SEX === 'M' || row.SEX === 'F') && 
         row.AGE === '_T' // All ages
     );
+    console.log(`[GenderChart] Filtered raw data for ${countryCode} (${employmentStatus}), AGE='_T', SEX='M' or 'F':`, countryData);
+
 
     if (countryData.length === 0) {
-      console.warn(`No data found for country ${countryCode} with employment status ${employmentStatus} for gender analysis.`);
+      console.warn(`[GenderChart] No data found for country ${countryCode} with employment status ${employmentStatus}, AGE='_T', SEX='M' or 'F'.`);
       return null;
     }
 
-    const countryName = countryData[0]['Pacific Island Countries and territories'];
+    const countryName = countryData[0]['Pacific Island Countries and territories'] || countryCode;
 
     const trendByYear: { [year: number]: { male: number; female: number } } = {};
 
@@ -331,7 +334,19 @@ export const loadGenderEmploymentData = async (
         male: values.male,
         female: values.female,
       }))
+      .filter(d => d.male > 0 || d.female > 0) // Ensure there's some data for the year
       .sort((a, b) => a.year - b.year);
+
+    if (trend.length === 0) {
+        console.warn(`[GenderChart] Trend data is empty after processing for ${countryName}. Original filtered count: ${countryData.length}`);
+        return { // Return with empty trend if country is valid but no breakdown by year/gender
+            countryCode,
+            countryName,
+            trend: [],
+        };
+    }
+    console.log(`[GenderChart] Processed gender trend for ${countryName}:`, trend);
+
 
     return {
       countryCode,
@@ -340,7 +355,7 @@ export const loadGenderEmploymentData = async (
     };
 
   } catch (error) {
-    console.error(`Error loading gender employment data for ${countryCode} (${employmentStatus}):`, error);
+    console.error(`[GenderChart] Error loading gender employment data for ${countryCode} (${employmentStatus}):`, error);
     return null;
   }
 };
@@ -349,24 +364,29 @@ export const loadGenderEmploymentData = async (
 export const loadEmploymentRatioTrendData = async (
   countryCode: string
 ): Promise<CountryEmploymentRatioTrend | null> => {
+  console.log(`[RatioChart] Loading ratio data for country: ${countryCode}`);
   try {
     const csvPath = '/data/SPC,DF_EMPLOYED_FTPT,1.0+A....._T._T..csv';
     const rawData = await d3.csv(csvPath) as unknown as RawCsvData[];
 
+    // Filter for rows relevant to the selected country, total sex, total age
+    // And where FTPT is FT, PT, or _T (Total)
     const countryData = rawData.filter(
       (row) => 
         row.GEO_PICT === countryCode &&
-        row.SEX === '_T' && // Total for Sex
-        row.AGE === '_T' && // Total for Age
-        (row.FTPT === 'FT' || row.FTPT === 'PT' || row.FTPT === '_T') // Full-time, Part-time, or Total employment
+        row.SEX === '_T' && 
+        row.AGE === '_T' && 
+        (row.FTPT === FULL_TIME_IDENTIFIER_PLACEHOLDER || row.FTPT === PART_TIME_IDENTIFIER_PLACEHOLDER || row.FTPT === TOTAL_SEX_IDENTIFIER_PLACEHOLDER)
     );
+    console.log(`[RatioChart] Filtered raw data for ${countryCode} (SEX='_T', AGE='_T', FTPT='FT' or 'PT' or '_T'):`, countryData);
+
 
     if (countryData.length === 0) {
-      console.warn(`No data found for country ${countryCode} for employment ratio trend analysis.`);
+      console.warn(`[RatioChart] No data found for country ${countryCode} for employment ratio trend analysis (SEX='_T', AGE='_T').`);
       return null;
     }
 
-    const countryName = countryData[0]['Pacific Island Countries and territories'];
+    const countryName = countryData[0]['Pacific Island Countries and territories'] || countryCode;
     const yearlyData: { 
       [year: number]: { fullTime: number; partTime: number; total: number } 
     } = {};
@@ -379,35 +399,54 @@ export const loadEmploymentRatioTrendData = async (
         yearlyData[year] = { fullTime: 0, partTime: 0, total: 0 };
       }
 
-      if (row.FTPT === 'FT') {
-        yearlyData[year].fullTime = value;
-      } else if (row.FTPT === 'PT') {
-        yearlyData[year].partTime = value;
-      } else if (row.FTPT === '_T') {
-        yearlyData[year].total = value;
+      if (row.FTPT === FULL_TIME_IDENTIFIER_PLACEHOLDER) {
+        yearlyData[year].fullTime = value; // Assuming one value per year/FTPT type
+      } else if (row.FTPT === PART_TIME_IDENTIFIER_PLACEHOLDER) {
+        yearlyData[year].partTime = value; // Assuming one value per year/FTPT type
+      } else if (row.FTPT === TOTAL_SEX_IDENTIFIER_PLACEHOLDER) { // This is '_T' for FTPT
+        yearlyData[year].total = value; // This is the explicit total for FT+PT
       }
     });
+    console.log(`[RatioChart] Aggregated yearly data for ${countryName}:`, yearlyData);
 
     const values: EmploymentRatioPoint[] = Object.entries(yearlyData)
       .map(([yearStr, data]) => {
         const year = parseInt(yearStr, 10);
-        const total = data.total; // Using the explicitly provided total
-        // If total is not available or zero, calculate from FT+PT, or default to 0 to avoid NaN
-        const effectiveTotal = total > 0 ? total : (data.fullTime + data.partTime);
         
+        const explicitTotal = data.total;
+        const calculatedSum = data.fullTime + data.partTime;
+        
+        let effectiveTotal = 0;
+        if (explicitTotal > 0) {
+            effectiveTotal = explicitTotal;
+        } else if (calculatedSum > 0) {
+            effectiveTotal = calculatedSum;
+        }
+        
+        // Calculate ratio: FT / PT. Handle PT = 0 to avoid division by zero.
+        const ratio = data.partTime > 0 ? data.fullTime / data.partTime : (data.fullTime > 0 ? Infinity : null);
+
         return {
           year,
           fullTimePercentage: effectiveTotal > 0 ? (data.fullTime / effectiveTotal) * 100 : 0,
           partTimePercentage: effectiveTotal > 0 ? (data.partTime / effectiveTotal) * 100 : 0,
+          fullTimeCount: data.fullTime, // Added for tooltip
+          partTimeCount: data.partTime, // Added for tooltip
+          ratio: ratio, // Added for the chart
         };
       })
-      .filter(point => point.fullTimePercentage > 0 || point.partTimePercentage > 0) // Ensure there's some data
+      .filter(point => point.ratio !== null && isFinite(point.ratio ?? 0) && (point.fullTimePercentage > 0 || point.partTimePercentage > 0) && (point.fullTimePercentage <= 100 && point.partTimePercentage <=100)) 
       .sort((a, b) => a.year - b.year);
 
     if (values.length === 0) {
-      console.warn(`Not enough data to calculate ratios for ${countryCode}`);
-      return null;
+      console.warn(`[RatioChart] Not enough valid data to calculate ratios for ${countryName}. Original filtered count: ${countryData.length}`);
+      return { // Return with empty values if country is valid but no ratio data
+        countryCode,
+        countryName,
+        values: [],
+      };
     }
+    console.log(`[RatioChart] Processed ratio trend for ${countryName}:`, values);
 
     return {
       countryCode,
@@ -416,7 +455,7 @@ export const loadEmploymentRatioTrendData = async (
     };
 
   } catch (error) {
-    console.error(`Error loading employment ratio trend data for ${countryCode}:`, error);
+    console.error(`[RatioChart] Error loading employment ratio trend data for ${countryCode}:`, error);
     return null;
   }
 };

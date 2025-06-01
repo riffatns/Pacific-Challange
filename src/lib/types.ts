@@ -113,6 +113,9 @@ export interface EmploymentRatioPoint {
   year: number;
   fullTimePercentage: number;
   partTimePercentage: number;
+  fullTimeCount?: number; // Added for tooltip
+  partTimeCount?: number; // Added for tooltip
+  ratio?: number | null; // Added for the chart's line (FT/PT ratio)
 }
 
 export interface CountryEmploymentRatioTrend {
