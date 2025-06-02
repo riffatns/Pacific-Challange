@@ -165,15 +165,13 @@ const transformDataForLineChart = (rawData: RawCsvData[]): CountryTimeSeriesData
 
   console.log("[LineChart] Aggregated data by country and year:", dataByCountryAndYear);
   const result: CountryTimeSeriesData[] = [];
-  dataByCountryAndYear.forEach((yearMap, countryKey) => {
-    const [countryCode, countryName] = countryKey.split('|');
+  dataByCountryAndYear.forEach((yearMap, countryKey) => {    const [countryCode, countryName] = countryKey.split('|');
     const timeSeriesPoints: TimeSeriesPoint[] = Array.from(yearMap.entries())
       .map(([year, value]) => ({ year, value }))
       .sort((a, b) => a.year - b.year);
 
-    if (timeSeriesPoints.length > 1) { // Hanya negara dengan >1 titik data
-      result.push({ countryCode, countryName, values: timeSeriesPoints });
-    }
+    // Include all countries regardless of number of data points
+    result.push({ countryCode, countryName, values: timeSeriesPoints });
   });
   console.log("[LineChart] Transformed data sample (first 5 rows):", result.slice(0,5));
   console.log("[LineChart] Total transformed entries:", result.length);

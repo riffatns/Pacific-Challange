@@ -42,11 +42,10 @@ const EmploymentTrendLineChart = ({
       return newSet;
     });
   };
-
   useEffect(() => {
-    // Reset hidden countries when selected countries change
+    // Reset hidden countries when data or selected countries change
     setHiddenCountries(new Set());
-  }, [selectedCountryCodes]);
+  }, [selectedCountryCodes, data]);
 
   useEffect(() => {
     if (!svgRef.current || displayData.length === 0 || width === 0 || height === 0) {
