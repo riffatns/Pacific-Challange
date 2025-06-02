@@ -12,7 +12,7 @@ interface DataSourceNoteProps {
 const DataSourceNote: React.FC<DataSourceNoteProps> = ({ sourceName, sourceLink, notes, className = '' }) => {
   return (
     <div className={`mt-12 p-4 bg-slate-50 rounded-lg text-sm text-slate-600 ${className}`}>
-      <h3 className="font-semibold text-slate-700 mb-1">Sumber Data:</h3>
+      <h3 className="font-semibold text-slate-700 mb-1">Data Source:</h3>
       {sourceLink ? (
         <a 
           href={sourceLink} 

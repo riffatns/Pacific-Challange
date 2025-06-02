@@ -9,12 +9,9 @@ const Footer: React.FC = () => {
         Dibuat dengan Next.js, D3.js, Tailwind CSS, dan Shadcn/UI.
       </p>
       <p className="mt-1">
-        Terinspirasi oleh{' '}
+        
         <a
-          href="https://holtzy.github.io/pacific-challenge/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+
         >
           Pacific Challenge
         </a>.
