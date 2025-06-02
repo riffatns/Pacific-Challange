@@ -216,16 +216,25 @@ export default function HomePage() {
             const niueCountry = countryFilters.find(c => c.name.includes('Niue'));
             const defaultCountry = niueCountry ? niueCountry.code : countryFilters[0].code;
             
-            // Set Niue as default selected country for new charts if not already set
-            if (selectedCountryForAgeChart === undefined) {
-              setSelectedCountryForAgeChart(defaultCountry);
-            }
-            if (selectedCountryForGenderChart === undefined) { 
-              setSelectedCountryForGenderChart(defaultCountry);
-            }
-            if (selectedCountryForRatioChart === undefined) { 
-              setSelectedCountryForRatioChart(defaultCountry);
-            }
+            // Set Niue as default selected country and immediately fetch data for all charts
+            setSelectedCountryForAgeChart(defaultCountry);
+            setSelectedCountryForGenderChart(defaultCountry);
+            setSelectedCountryForRatioChart(defaultCountry);
+
+            // Immediately fetch data for the ratio chart
+            const fetchInitialRatioData = async () => {
+              try {
+                const ratioData = await loadEmploymentRatioTrendData(defaultCountry);
+                if (ratioData) {
+                  setEmploymentRatioData(ratioData);
+                }
+              } catch (err) {
+                console.error("Error fetching initial ratio data:", err);
+              }
+            };
+
+            // Call the function immediately
+            fetchInitialRatioData();
           }
         } else {
          const reason = lineDataResult.status === 'rejected' ? (lineDataResult.reason instanceof Error ? lineDataResult.reason.message : String(lineDataResult.reason)) : 'Data kosong atau tidak valid';
@@ -314,11 +323,9 @@ export default function HomePage() {
 
   // useEffect untuk memuat data EmploymentRatioChart (Baru)
   useEffect(() => {
-    if (!selectedCountryForRatioChart) {
-      setEmploymentRatioData(null);
-      return;
-    }
     const fetchRatioData = async () => {
+      if (!selectedCountryForRatioChart) return;
+      
       setLoadingEmploymentRatio(true);
       setErrorEmploymentRatio(null);
       try {
@@ -327,17 +334,21 @@ export default function HomePage() {
           setEmploymentRatioData(data);
         } else {
           setEmploymentRatioData(null);
-          setErrorEmploymentRatio(`Tidak ada data rasio pekerjaan untuk ${allCountryCodesForFilter.find((c: CountryOption) => c.code === selectedCountryForRatioChart)?.name || selectedCountryForRatioChart}.`);
+          const countryName = allCountryCodesForFilter.find((c: CountryOption) => 
+            c.code === selectedCountryForRatioChart
+          )?.name || selectedCountryForRatioChart;
+          setErrorEmploymentRatio(`No employment ratio data for ${countryName}.`);
         }
       } catch (err) {
         console.error("Error fetching employment ratio data:", err);
-        const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan yang tidak diketahui.";
-        setErrorEmploymentRatio(`Gagal memuat data rasio pekerjaan: ${errorMessage}`);
+        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred.";
+        setErrorEmploymentRatio(`Failed to load employment ratio data: ${errorMessage}`);
         setEmploymentRatioData(null);
       } finally {
         setLoadingEmploymentRatio(false);
       }
     };
+
     fetchRatioData();
   }, [selectedCountryForRatioChart, allCountryCodesForFilter]);
 

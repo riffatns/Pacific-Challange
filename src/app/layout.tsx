@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Dasbor Ketenagakerjaan Pasifik", // Sesuaikan
-  description: "Visualisasi data ketenagakerjaan di negara-negara dan wilayah Kepulauan Pasifik.", // Sesuaikan
+  title: "Pacific Employment Dashboard",
+  description: "Visualization of employment data in Pacific Island countries and territories.",
 };
 
 export default function RootLayout({
