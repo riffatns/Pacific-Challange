@@ -391,20 +391,19 @@ export default function HomePage() {
       </div>
         <Separator className="my-12" /> {/* Separator after the map section */}        <div className="my-12">
         <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Employment Composition by Country/Region (Latest Year)</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Comparison of full-time and part-time workers. Hover for details.</p>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">The nature of work varies significantly across Pacific nations, shaped by unique economic landscapes and cultural contexts.</p>
         
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            This visualization shows the comparison between the number of 
-            <span className="font-semibold text-slate-900"> full-time workers</span> (blue) and 
-            <span className="font-semibold text-slate-900"> part-time workers</span> (orange) across 
-            various countries and regions in the Pacific Islands. This data is important for understanding regional employment patterns, 
-            showing that some countries have higher proportions of part-time workers, while others are dominated by full-time workers. 
-            These differences reflect variations in economic structure, labor markets, and availability of job opportunities in each country.
+            Across the Pacific Islands, the balance between 
+            <span className="font-semibold text-slate-900"> traditional full-time employment</span> and 
+            <span className="font-semibold text-slate-900"> flexible part-time arrangements</span> tells a story of diverse economic realities. 
+            Some nations lean heavily toward conventional employment structures, while others embrace more adaptable work patterns. 
+            These distinctions often mirror each country's economic maturity, industry composition, and social frameworks, 
+            creating a fascinating mosaic of labor market characteristics worth exploring in detail.
           </p>
         </div>
-        
-        <div className={`min-h-[${barChartHeight}px]`}>
+          <div className={`min-h-[${barChartHeight}px]`}>
           {loadingBar && <Skeleton className="w-full h-[400px]" />}
           {!loadingBar && employmentDataBar.length > 0 && (
             <div ref={chart1ContainerRef} className="w-full" style={{height: `${barChartHeight}px`}}>
@@ -420,20 +419,28 @@ export default function HomePage() {
               {error && error.includes("Bar Chart") ? "Failed to load composition data." : "No composition data to display."}
             </p>
           )}
-        </div>
+        </div>        {!loadingBar && employmentDataBar.length > 0 && (
+          <div className="mt-6">
+            <p className="text-base leading-relaxed text-slate-600 italic">
+              The data reveals distinct employment cultures across the Pacific, 
+              with some nations maintaining traditional full-time work structures while others have adapted to more flexible labor arrangements, 
+              reflecting varying stages of economic development and social adaptation.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="my-12" />      {/* Visualisasi Kedua: Line Chart Tren */}      <div className="my-12">
         <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Total Employment Trends Over Time</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Displaying changes in the total number of workers year by year per country. Select countries to focus on using the filter, or click country names in the legend to show/hide.</p>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">Economic stories unfold over time, revealing the ebb and flow of opportunity across Pacific nations.</p>
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            This chart tracks changes in 
-            <span className="font-semibold text-slate-900"> workforce numbers</span> across Pacific countries over several years. 
-            These trends provide insights into employment growth or decline in various countries, 
-            which can be linked to economic, demographic, and social factors. By comparing countries 
-            side by side, we can identify regional patterns and analyze how economic development 
-            affects labor markets in the Pacific region.
+            Behind every employment statistic lies a human story of progress, challenge, and adaptation. 
+            The trajectory of <span className="font-semibold text-slate-900"> workforce growth</span> in Pacific countries 
+            reflects not just economic cycles, but the resilience of communities navigating global changes, 
+            natural events, and evolving industries. Some nations experience steady climbs, others face periodic adjustments, 
+            and a few showcase remarkable transformation—each path offering insights into the complex interplay 
+            between geography, policy, and prosperity in the Pacific region.
           </p>
         </div>
 
@@ -464,9 +471,7 @@ export default function HomePage() {
                 Select All
               </Button>
           </div>
-        )}
-
-        <div className="min-h-[550px]">
+        )}        <div className="min-h-[550px]">
           {loadingLine && <Skeleton className="w-full h-[450px]" />}
           {!loadingLine && employmentDataLine.length > 0 && (
             <div ref={chart2ContainerRef} className="w-full h-[450px]">
@@ -483,21 +488,29 @@ export default function HomePage() {
                 {error && error.includes("Line Chart") ? "Failed to load trend data." : "No trend data to display."}
               </p>
           )}
-        </div>
+        </div>        {!loadingLine && employmentDataLine.length > 0 && (
+          <div className="mt-6">
+            <p className="text-base leading-relaxed text-slate-600 italic">
+              Employment trajectories across the Pacific reveal diverse 
+              economic narratives—some countries demonstrate consistent growth patterns while others show cyclical fluctuations, 
+              highlighting the varied resilience and adaptability of island economies to both regional and global influences.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="my-12" />      {/* Visualisasi Ketiga: Age Composition Bar Chart */}      <div className="my-12">
         <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Employment Composition by Age Group</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Displaying the comparison of full-time and part-time workers across different age groups for the selected country (latest available data).</p>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">The rhythm of working life varies across generations, reflecting changing aspirations and life circumstances.</p>
         
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            This visualization shows how 
-            <span className="font-semibold text-slate-900"> employment composition</span> (full-time vs part-time) varies across different age groups. 
-            This distribution highlights important workforce demographic trends, such as young workers' tendency to prefer 
-            part-time work due to education or older workers shifting to part-time work 
-            approaching retirement. Analysis of the age composition of the workforce also helps identify challenges in the labor 
-            market such as youth unemployment or generational skills gaps.
+            Each stage of life brings its own relationship with work. Young adults often navigate between education and career building, 
+            mid-career professionals typically embrace full commitment, while those approaching retirement may seek greater flexibility. 
+            This natural progression manifests differently across Pacific cultures, where traditional values intersect with modern 
+            <span className="font-semibold text-slate-900"> workforce expectations</span>. 
+            Understanding these generational patterns reveals not just current employment preferences, 
+            but hints at future labor market dynamics as demographics shift and societal priorities evolve.
           </p>
         </div>
 
@@ -534,8 +547,7 @@ export default function HomePage() {
           {!loadingAgeComposition && !errorAgeComposition && !ageCompositionData && !selectedCountryForAgeChart && (              <p className="text-center py-10 text-slate-600">
                 Please select a country to view age composition data.
               </p>
-          )}
-          {!loadingAgeComposition && !errorAgeComposition && ageCompositionData && (
+          )}          {!loadingAgeComposition && !errorAgeComposition && ageCompositionData && (
             <div ref={chart3ContainerRef} className="w-full h-[450px]">
               {chart3Dimensions.width > 0 && chart3Dimensions.height > 0 && (
                    <AgeCompositionBarChart
@@ -546,21 +558,29 @@ export default function HomePage() {
               )}
             </div>
           )}
-        </div>
+        </div>        {!loadingAgeComposition && !errorAgeComposition && ageCompositionData && (
+          <div className="mt-6">
+            <p className="text-base leading-relaxed text-slate-600 italic">
+              Age-based employment patterns often mirror life stage priorities, 
+              with younger demographics balancing education and early career flexibility, while older workers may transition toward 
+              part-time arrangements, creating distinct generational approaches to work-life integration.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="my-12" />      {/* Visualisasi Keempat: Gender Disparity Line Chart (BARU) */}      <div className="my-12">
-        <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Employment Disparities Based on Gender (Total Workers)</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Trends comparing the number of male and female workers (total, not by employment status) over time for the selected country.</p>
+        <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Employment Disparities Based on Gender</h3>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">Progress toward workplace equality unfolds at different paces across Pacific societies, shaped by tradition and transformation.</p>
         
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            This chart shows 
-            <span className="font-semibold text-slate-900"> gender gaps</span> in labor markets across Pacific Island countries over several years. 
-            This data is crucial for analyzing gender equality in employment and identifying trends toward equality or 
-            continuing inequality. Significant or changing disparities may reflect cultural, structural, and policy factors 
-            that affect women's access to the labor market. Understanding these differences can help design 
-            more inclusive policies and provide equal opportunities for all genders.
+            The journey toward equal workforce participation reflects the intersection of cultural heritage and modern aspirations. 
+            As Pacific societies navigate evolving social expectations, the 
+            <span className="font-semibold text-slate-900"> representation of different genders</span> in the workforce 
+            tells a nuanced story of progress, resistance, and gradual change. 
+            Some nations have achieved remarkable balance, while others continue working toward more inclusive employment landscapes. 
+            These patterns reveal not just current realities, but signal the direction of future social and economic development.
           </p>
         </div>
 
@@ -597,8 +617,7 @@ export default function HomePage() {
           {!loadingGenderDisparity && !errorGenderDisparity && !genderDisparityData && !selectedCountryForGenderChart && (              <p className="text-center py-10 text-slate-600">
                 Please select a country to view gender disparity data.
               </p>
-          )}
-          {!loadingGenderDisparity && !errorGenderDisparity && genderDisparityData && (
+          )}          {!loadingGenderDisparity && !errorGenderDisparity && genderDisparityData && (
             <div ref={chart4ContainerRef} className="w-full h-[450px]">
               {chart4Dimensions.width > 0 && chart4Dimensions.height > 0 && (
                    <GenderDisparityLineChart
@@ -609,22 +628,29 @@ export default function HomePage() {
               )}
             </div>
           )}
-        </div>
+        </div>        {!loadingGenderDisparity && !errorGenderDisparity && genderDisparityData && (
+          <div className="mt-6">
+            <p className="text-base leading-relaxed text-slate-600 italic">
+              Gender participation trends in Pacific labor markets 
+              reflect ongoing social transformation, with some countries showing convergence toward balanced representation 
+              while others maintain traditional patterns, indicating varied speeds of cultural and economic evolution.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="my-12" />      {/* Visualisasi Kelima: Employment Ratio Trend Chart (BARU) */}      <div className="my-12">
         <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Full-Time vs. Part-Time Worker Ratio Trends</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Showing changes in the ratio of full-time to part-time workers year by year for the selected country.</p>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">The evolution of work preferences reflects changing economic landscapes and shifting social priorities.</p>
         
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            This visualization shows how the 
-            <span className="font-semibold text-slate-900"> ratio between full-time and part-time workers</span> has changed over time in 
-            Pacific countries. These trends reflect changes in labor market flexibility and may also indicate 
-            structural changes in the economy. An increase in part-time employment may indicate a growing service economy, 
-            changing workforce preferences, or market adaptation to fluctuating economic conditions. Examining these trends 
-            helps understand how employment structures evolve and their implications for the economic 
-            and social well-being of the population.
+            As economies mature and societies adapt to global trends, the traditional boundaries of employment continue to evolve. 
+            The shifting <span className="font-semibold text-slate-900"> balance between structured and flexible work arrangements</span> 
+            captures more than just employment statistics—it reflects changing life philosophies, economic pressures, and cultural adaptations. 
+            Whether driven by technological advancement, demographic shifts, or evolving values around work-life balance, 
+            these trends offer a window into how Pacific nations are redefining the very nature of career and commitment 
+            in an increasingly connected yet diverse regional economy.
           </p>
         </div>
 
@@ -661,8 +687,7 @@ export default function HomePage() {
           {!loadingEmploymentRatio && !errorEmploymentRatio && !employmentRatioData && !selectedCountryForRatioChart && (              <p className="text-center py-10 text-slate-600">
                 Please select a country to view employment ratio data.
               </p>
-          )}
-          {!loadingEmploymentRatio && !errorEmploymentRatio && employmentRatioData && (
+          )}          {!loadingEmploymentRatio && !errorEmploymentRatio && employmentRatioData && (
             <div ref={chart5ContainerRef} className="w-full h-[450px]">
               {chart5Dimensions.width > 0 && chart5Dimensions.height > 0 && (
                    <EmploymentRatioTrendChart
@@ -673,7 +698,15 @@ export default function HomePage() {
               )}
             </div>
           )}
-        </div>
+        </div>        {!loadingEmploymentRatio && !errorEmploymentRatio && employmentRatioData && (
+          <div className="mt-6">
+            <p className="text-base leading-relaxed text-slate-600 italic">
+              The evolution of full-time to part-time ratios reveals 
+              how Pacific economies are adapting to modern work paradigms, with some countries embracing flexible employment 
+              models while others maintain traditional structures, reflecting diverse approaches to economic modernization.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator className="my-12" />      <DataSourceNote 
