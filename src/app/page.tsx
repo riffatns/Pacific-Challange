@@ -207,20 +207,24 @@ export default function HomePage() {
             .map((c: CountryTimeSeriesData) => ({ code: c.countryCode, name: c.countryName }))
             .sort((a,b)=> a.name.localeCompare(b.name));
           setAllCountryCodesForFilter(countryFilters);
-            if (countryFilters.length > 0) {
+          if (countryFilters.length > 0) {
             // Select all countries by default for the line chart
             const defaultSelectedCountries = countryFilters.map(cf => cf.code);
             setSelectedCountriesForLine(defaultSelectedCountries);
             
-            // Set default selected country for new charts if not already set
+            // Find Niue in the country filters
+            const niueCountry = countryFilters.find(c => c.name.includes('Niue'));
+            const defaultCountry = niueCountry ? niueCountry.code : countryFilters[0].code;
+            
+            // Set Niue as default selected country for new charts if not already set
             if (selectedCountryForAgeChart === undefined) {
-              setSelectedCountryForAgeChart(countryFilters[0].code);
+              setSelectedCountryForAgeChart(defaultCountry);
             }
             if (selectedCountryForGenderChart === undefined) { 
-              setSelectedCountryForGenderChart(countryFilters[0].code);
+              setSelectedCountryForGenderChart(defaultCountry);
             }
             if (selectedCountryForRatioChart === undefined) { 
-              setSelectedCountryForRatioChart(countryFilters[0].code);
+              setSelectedCountryForRatioChart(defaultCountry);
             }
           }
         } else {
@@ -350,12 +354,13 @@ export default function HomePage() {
   };
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 max-w-[1200px]">
-      <div className="mb-8 pt-8 md:pt-12 lg:pt-16">      <p className="text-sm uppercase text-gray-500 tracking-wider font-medium">REGIONAL EMPLOYMENT ANALYSIS</p>
-      <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mt-2 mb-6 text-slate-900">
-        Employment<br />in the Pacific
-      </h1>
+      <div className="mb-8 pt-8 md:pt-12 lg:pt-16">
+      <div className="space-y-4">
+        <p className="text-sm uppercase text-gray-500 tracking-wider font-medium">REGIONAL EMPLOYMENT ANALYSIS</p>
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900">Employment<br />in the Pacific</h1>
+      </div>
       
-      <div className="text-lg md:text-xl max-w-3xl">
+      <div className="text-lg md:text-xl max-w-3xl mt-8">
         <p className="mb-4 leading-relaxed text-slate-800">
         Employment patterns in the Pacific Islands region show interesting variations, with significant differences in 
         <span className="font-semibold text-slate-900"> worker composition</span>, 
@@ -364,7 +369,11 @@ export default function HomePage() {
         The following visualizations explore these trends based on the latest data from the Pacific Data Hub.
         </p>
       </div>
-      </div><div className="relative">
+      </div>
+
+      <p className="text-center text-sm text-gray-500 italic mb-6">A project by riffatns</p>
+
+      <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-gray-100 opacity-50 z-0"></div>
         <div ref={mapContainerRef} className="w-full h-[400px] md:h-[500px] mb-12 mt-6 relative overflow-visible z-10">
           {loadingGeoJson && <Skeleton className="w-full h-full" />}

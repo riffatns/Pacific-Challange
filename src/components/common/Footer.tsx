@@ -7,14 +7,16 @@ const Footer: React.FC = () => {
       <p className="font-medium">&copy; {currentYear} Pacific Employment.</p>
       <p className="mt-2 leading-relaxed">
         Built with Next.js, D3.js, Tailwind CSS, and Shadcn/UI.
-      </p>
-      <p className="mt-2">
+      </p>      <p className="mt-2">
         <a 
           className="font-medium text-slate-800 hover:text-slate-900 transition-colors"
           href="#"
         >
           Pacific Challenge
         </a>
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        A project by riffatns
       </p>
     </footer>
   );
