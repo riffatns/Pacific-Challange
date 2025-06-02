@@ -89,9 +89,8 @@ const AgeCompositionBarChart: React.FC<AgeCompositionBarChartProps> = ({ data, w
     
     g.append("text")
         .attr("text-anchor", "middle")
-        .attr("x", chartWidth / 2)
-        .attr("y", chartHeight + MARGIN.bottom - 10)
-        .text("Kelompok Usia")
+        .attr("x", chartWidth / 2)        .attr("y", chartHeight + MARGIN.bottom - 10)
+        .text("Age Group")
         .style("font-size", "12px");
 
 
@@ -105,8 +104,7 @@ const AgeCompositionBarChart: React.FC<AgeCompositionBarChartProps> = ({ data, w
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("x", -chartHeight / 2)
-        .attr("y", -MARGIN.left + 20)
-        .text("Jumlah Pekerja")
+        .attr("y", -MARGIN.left + 20)        .text("Number of Workers")
         .style("font-size", "12px");
 
     // Judul Chart (opsional, bisa dari ChartCard)
@@ -138,7 +136,7 @@ const AgeCompositionBarChart: React.FC<AgeCompositionBarChartProps> = ({ data, w
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .style("font-size", "10px")
-      .text(d => d === 'fullTime' ? 'Penuh Waktu' : 'Paruh Waktu');
+      .text(d => d === 'fullTime' ? 'Full-time' : 'Part-time');
 
   }, [data, width, height]);
 
@@ -146,7 +144,7 @@ const AgeCompositionBarChart: React.FC<AgeCompositionBarChartProps> = ({ data, w
     return (
       <svg ref={svgRef} width={width} height={height}>
         <text x={width/2} y={height/2} textAnchor="middle" fill="#888">
-          Pilih negara untuk melihat data komposisi usia.
+          Select a country to view age composition data.
         </text>
       </svg>
     );

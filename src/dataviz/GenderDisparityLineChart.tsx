@@ -61,8 +61,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
       .attr("x", chartWidth / 2)
       .attr("y", chartHeight + MARGIN.bottom - 10)
       .style("font-size", "12px")
-      .style("fill", "#333")
-      .text("Tahun");
+      .style("fill", "#333")      .text("Year");
 
     const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => d3.format("~s")(d));
     g.append("g").call(yAxis);
@@ -75,7 +74,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
       .attr("y", -MARGIN.left + 20)
       .style("font-size", "12px")
       .style("fill", "#333")
-      .text("Jumlah Pekerja");
+      .text("Number of Workers");
 
     // Line generator for MALE data
     const lineMale = d3.line<{ year: number; male: number }>()
@@ -139,8 +138,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
           .attr("r", 5)
           .style("fill", colorScale('Male'))
           .style("cursor", "pointer")
-          .on("mouseover", (event, d) => {
-            tooltip.html(`<strong>Laki-laki (${d.year})</strong><br/>Jumlah: ${d3.format(",")(d.male)}`)
+          .on("mouseover", (event, d) => {            tooltip.html(`<strong>Male (${d.year})</strong><br/>Count: ${d3.format(",")(d.male)}`)
               .style("visibility", "visible");
             d3.select(event.currentTarget).transition().duration(150).attr("r", 7);
           })
@@ -166,7 +164,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
           .style("fill", colorScale('Female'))
           .style("cursor", "pointer")
           .on("mouseover", (event, d) => {
-            tooltip.html(`<strong>Perempuan (${d.year})</strong><br/>Jumlah: ${d3.format(",")(d.female)}`)
+            tooltip.html(`<strong>Female (${d.year})</strong><br/>Count: ${d3.format(",")(d.female)}`)
               .style("visibility", "visible");
             d3.select(event.currentTarget).transition().duration(150).attr("r", 7);
           })
@@ -198,8 +196,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "start")
-      .style("font-size", "12px")
-      .text(d => d === 'Male' ? 'Laki-laki' : 'Perempuan');
+      .style("font-size", "12px")      .text(d => d === 'Male' ? 'Male' : 'Female');
 
     // Chart Title
     svg.append("text")
@@ -208,7 +205,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text(`Disparitas Gender dalam Ketenagakerjaan di ${data.countryName}`);
+        .text(`Gender Employment Disparity in ${data.countryName}`);
 
   }, [data, width, height]);
 
@@ -220,7 +217,7 @@ const GenderDisparityLineChart: React.FC<GenderDisparityLineChartProps> = ({ dat
         .attr("y", height / 2)
         .attr("text-anchor", "middle")
         .style("font-size", "14px")
-        .text("Data tidak tersedia untuk negara ini.");
+        .text("No data available for this country.");
   }
 
 

@@ -111,6 +111,8 @@ export interface CountryGenderEmploymentData {
 export interface EmploymentRatioPoint {
   year: number;
   ratio: number | null; // Employment to population ratio - Allow null
+  fullTimeCount: number; // Added for separate lines
+  partTimeCount: number; // Added for separate lines
 }
 
 export interface CountryEmploymentRatioTrend {

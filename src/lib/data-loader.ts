@@ -41,22 +41,22 @@ const TOTAL_SEX_IDENTIFIER_PLACEHOLDER = '_T'; // Contoh: '_T' untuk Total. Konf
 
 // Pemetaan untuk nama kelompok usia yang lebih deskriptif
 const AGE_GROUP_MAP: { [key: string]: string } = {
-  'Y15T24': '15-24 tahun',
-  'Y25T54': '25-54 tahun',
-  'Y55T64': '55-64 tahun',
-  'Y65+': '65+ tahun',
-  'Y15T19': '15-19 tahun',
-  'Y20T24': '20-24 tahun',
-  'Y15T29': '15-29 tahun',
-  'Y25+': '25+ tahun',
-  'Y30T34': '30-34 tahun',
-  'Y35T39': '35-39 tahun',
-  'Y40T44': '40-44 tahun',
-  'Y45T49': '45-49 tahun',
-  'Y50T54': '50-54 tahun',
-  'Y55T59': '55-59 tahun',
-  'Y60T64': '60-64 tahun',
-  // Tambahkan pemetaan lain jika ada kelompok usia berbeda di CSV
+  'Y15T24': '15-24 years',
+  'Y25T54': '25-54 years',
+  'Y55T64': '55-64 years',
+  'Y65+': '65+ years',
+  'Y15T19': '15-19 years',
+  'Y20T24': '20-24 years',
+  'Y15T29': '15-29 years',
+  'Y25+': '25+ years',
+  'Y30T34': '30-34 years',
+  'Y35T39': '35-39 years',
+  'Y40T44': '40-44 years',
+  'Y45T49': '45-49 years',
+  'Y50T54': '50-54 years',
+  'Y55T59': '55-59 years',
+  'Y60T64': '60-64 years',
+  // Add other mappings if there are different age groups in CSV
 };
 
 // Fungsi Transformasi untuk Bar Chart (EmploymentCountryComparisonBar)

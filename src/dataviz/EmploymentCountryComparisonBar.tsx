@@ -75,15 +75,14 @@ const EmploymentCountryComparisonBar = ({ data, width, height }: EmploymentCount
       .attr("stroke", "white")
       .attr("stroke-width", 0.5)
       .on("mouseover", function(event, d_rect) {
-        d3.select(this).attr("opacity", 0.8);
-        const seriesKeyText = d_rect.seriesKey === 'fullTime' ? 'Penuh Waktu' : 'Paruh Waktu';
+        d3.select(this).attr("opacity", 0.8);        const seriesKeyText = d_rect.seriesKey === 'fullTime' ? 'Full-time' : 'Part-time';
         const value = d_rect[1] - d_rect[0];
         tooltip.style("visibility", "visible")
                .html(`
                   <div class="font-bold text-sm mb-1">${d_rect.data.countryName} (${d_rect.data.year})</div>
                   <div class="text-xs">
-                    <span style="color:${colorScale('fullTime')}">■</span> Penuh Waktu: ${d3.format(",")(d_rect.data.fullTime)}<br/>
-                    <span style="color:${colorScale('partTime')}">■</span> Paruh Waktu: ${d3.format(",")(d_rect.data.partTime)}<br/>
+                    <span style="color:${colorScale('fullTime')}">■</span> Full-time: ${d3.format(",")(d_rect.data.fullTime)}<br/>
+                    <span style="color:${colorScale('partTime')}">■</span> Part-time: ${d3.format(",")(d_rect.data.partTime)}<br/>
                     Total: ${d3.format(",")(d_rect.data.totalEmployed)}<br/>
                     <hr class="my-1"/>
                     <i>${seriesKeyText}: ${d3.format(",")(value)}</i>
@@ -104,19 +103,18 @@ const EmploymentCountryComparisonBar = ({ data, width, height }: EmploymentCount
       .selectAll("text")
         .attr("transform", "translate(-10,5)rotate(-45)")
         .style("text-anchor", "end");
-    
-    chartGroup.append("text")
+      chartGroup.append("text")
         .attr("text-anchor", "middle")
         .attr("x", innerWidth / 2)
         .attr("y", innerHeight + MARGIN.bottom - 25)
         .attr("class", "text-sm fill-gray-700")
-        .text("Jumlah Pekerja");
+        .text("Number of Workers");
 
     const yAxis = d3.axisLeft(yScale);
     chartGroup.append('g').call(yAxis)
       .selectAll<SVGTextElement, unknown>(".tick text")
       .attr("class", "text-xs")
-      .call(wrapText, MARGIN.left - 10); // Wrap text untuk nama negara yang panjang
+      .call(wrapText, MARGIN.left - 10); // Wrap text for long country names
 
     chartGroup.append("text")
         .attr("text-anchor", "middle")
@@ -124,12 +122,11 @@ const EmploymentCountryComparisonBar = ({ data, width, height }: EmploymentCount
         .attr("y", -MARGIN.left + 15)
         .attr("x", -innerHeight / 2)
         .attr("class", "text-sm fill-gray-700")
-        .text("Negara/Wilayah");
-    
-    // Legenda (jika masih ada ruang, jika tidak bisa diletakkan di luar SVG via HTML)
+        .text("Country/Territory");
+      // Legend
     const legendData = [
-        { key: 'fullTime', label: 'Pekerja Penuh Waktu', color: colorScale('fullTime') },
-        { key: 'partTime', label: 'Pekerja Paruh Waktu', color: colorScale('partTime') },
+        { key: 'fullTime', label: 'Full-time Workers', color: colorScale('fullTime') },
+        { key: 'partTime', label: 'Part-time Workers', color: colorScale('partTime') },
     ];
     const legend = chartGroup.selectAll('.legend-item')
         .data(legendData)
@@ -158,13 +155,13 @@ const EmploymentCountryComparisonBar = ({ data, width, height }: EmploymentCount
 
   }, [data, width, height]); // Sertakan semua dependensi yang relevan
 
-  // Render logic untuk state loading/error/no-data sebaiknya dihandle di page.tsx
-  // Komponen chart ini fokus pada rendering SVG jika data dan ukuran valid.
+  // Handle loading/error/no-data states in the component
+  // Component focuses on rendering SVG when data and dimensions are valid
   if (width === 0 || height === 0) {
-      return <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">Menunggu ukuran kontainer...</div>;
+      return <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">Waiting for container size...</div>;
   }
   if (!data || data.length === 0) {
-    return <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">Tidak ada data untuk ditampilkan.</div>;
+    return <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">No data to display.</div>;
   }
 
   return <svg ref={svgRef} width={width} height={height}></svg>;
