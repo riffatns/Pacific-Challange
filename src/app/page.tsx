@@ -6,7 +6,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 // Komponen Umum
 import PageTitle from '../components/common/PageTitle';
 import Description from '../components/common/Description';
-import ChartCard from '../components/common/ChartCard';
 import DataSourceNote from '../components/common/DataSourceNote';
 import Footer from '../components/common/Footer';
 
@@ -349,97 +348,102 @@ export default function HomePage() {
         : [...prev, countryCode]
     );
   };
-
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header - Women in the Pacific - This seems to be duplicated, removing one instance */}
-      {/* 
-      <div className="mb-16 text-center">
-        <p className="text-sm uppercase text-gray-500 tracking-wider">A LOOK AT EMPLOYMENT IN THE PACIFIC</p>
-        <PageTitle 
-          title="Employment in the Pacific"
-        />
-        <Description className="max-w-2xl mx-auto">
-          Employment dynamics in the Pacific islands reveal diverse trends. This essay
-          explores these dynamics, despite varying access to full-time and part-time opportunities.
-        </Description>
-      </div>
-      */}
-
-      {/* New Section: A LOOK AT EMPLOYMENT IN THE PACIFIC + BubbleMap */}
-      <div className="text-center py-8 md:py-12">
-        <p className="text-sm uppercase text-gray-500 tracking-wider">A LOOK AT EMPLOYMENT IN THE PACIFIC</p>
-        <PageTitle 
-          title="Employment in the Pacific"
-        />
-        <Description className="max-w-2xl mx-auto">
-          Employment dynamics in the Pacific islands reveal diverse trends. This essay
-          explores these dynamics, despite varying access to full-time and part-time opportunities.
-        </Description>
-      </div>
-
-      <div ref={mapContainerRef} className="w-full h-[500px] md:h-[600px] mb-12 relative">
-        {loadingGeoJson && <Skeleton className="w-full h-full" />}
-        {!loadingGeoJson && geoJsonData && mapDimensions.width > 0 && mapDimensions.height > 0 && (
-          <BubbleMap
-            width={mapDimensions.width}
-            height={mapDimensions.height}
-            mapGeoData={geoJsonData} 
-            bubbleData={bubbleMapItems} 
-            scale={250} // Ditingkatkan dari 180 menjadi 250 untuk memperbesar area terlihat
-            bubbleSize={12} // Disesuaikan dari 15 menjadi 12 agar proporsional dengan area yang lebih fokus
-            selectedIsland={selectedIsland}
-            setSelectedIsland={setSelectedIsland}
-          />
-        )}
-        {!loadingGeoJson && !geoJsonData && (
-          <p className="text-center py-10 text-gray-500">Gagal memuat data peta geografis. Pastikan file GeoJSON ada di public/world-pacific.geojson</p>
-        )}
-      </div>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 max-w-[1200px]">
+      <div className="mb-8 pt-8 md:pt-12 lg:pt-16">
+      <p className="text-sm uppercase text-gray-500 tracking-wider font-medium">ANALISIS KETENAGAKERJAAN REGIONAL</p>
+      <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mt-2 mb-6 text-slate-900">
+        Ketenagakerjaan<br />di Pasifik
+      </h1>
       
-      <Separator className="my-8" /> {/* Separator after the map section */}
-      {/* End of New Section */}
-
-      <PageTitle 
-        title="Analisis Ketenagakerjaan di Kepulauan Pasifik"
-        subtitle="Visualisasi Tren dan Komposisi Tenaga Kerja Regional"
-      />
-
-      {/* Visualisasi Pertama: Bar Chart Komposisi */}
-      <ChartCard
-        title="Komposisi Pekerjaan per Negara/Wilayah (Tahun Terbaru)"
-        description="Perbandingan jumlah pekerja penuh waktu dan paruh waktu. Arahkan kursor untuk detail."
-        contentClassName={`min-h-[${barChartHeight}px]`}
-      >
-        {loadingBar && <Skeleton className="w-full h-[400px]" />}
-        {!loadingBar && employmentDataBar.length > 0 && (
-          <div ref={chart1ContainerRef} className="w-full" style={{height: `${barChartHeight}px`}}>
-            {chart1Dimensions.width > 0 && chart1Dimensions.height > 0 && (
-                 <EmploymentCountryComparisonBar 
-                    data={employmentDataBar} 
-                    width={chart1Dimensions.width} 
-                    height={chart1Dimensions.height}
-                 />
-            )}
-          </div>
-        )}
-        {!loadingBar && employmentDataBar.length === 0 && (
-          <p className="text-center py-10 text-gray-500">
-            {error && error.includes("Bar Chart") ? "Gagal memuat data komposisi." : "Tidak ada data komposisi untuk ditampilkan."}
+      <div className="text-lg md:text-xl max-w-3xl">
+        <p className="mb-4 leading-relaxed text-slate-800">
+        Pola ketenagakerjaan di wilayah Kepulauan Pasifik menunjukkan variasi menarik, dengan perbedaan signifikan dalam 
+        <span className="font-semibold text-slate-900"> komposisi pekerja</span>, 
+        <span className="font-semibold text-slate-900"> disparitas gender</span>, dan 
+        <span className="font-semibold text-slate-900"> distribusi usia</span> tenaga kerja. 
+        Visualisasi berikut mengeksplorasi tren ini berdasarkan data terbaru dari Pacific Data Hub.
+        </p>
+      </div>
+      </div><div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-gray-100 opacity-50 z-0"></div>
+        <div ref={mapContainerRef} className="w-full h-[400px] md:h-[500px] mb-12 mt-6 relative overflow-visible z-10">
+          {loadingGeoJson && <Skeleton className="w-full h-full" />}
+          {!loadingGeoJson && geoJsonData && mapDimensions.width > 0 && mapDimensions.height > 0 && (
+            <BubbleMap
+              width={mapDimensions.width}
+              height={mapDimensions.height}
+              mapGeoData={geoJsonData} 
+              bubbleData={bubbleMapItems} 
+              scale={250}
+              bubbleSize={16}
+              selectedIsland={selectedIsland}
+              setSelectedIsland={setSelectedIsland}
+            />
+          )}
+          {!loadingGeoJson && !geoJsonData && (
+            <p className="text-center py-10 text-gray-500">Gagal memuat data peta geografis. Pastikan file GeoJSON ada di public/world-pacific.geojson</p>
+          )}
+        </div>
+        
+        <div className="absolute bottom-16 right-6 text-xs text-gray-500">
+          <p>A project by <span className="font-medium">Yan Holtz</span> and <span className="font-medium">Joseph Barbier</span></p>
+          <p>July 2024</p>
+        </div>
+      </div>
+        <Separator className="my-12" /> {/* Separator after the map section */}
+      
+      <div className="my-12">
+        <h3 className="text-2xl font-semibold mb-2">Komposisi Pekerjaan per Negara/Wilayah (Tahun Terbaru)</h3>
+        <p className="text-gray-600 mb-4">Perbandingan jumlah pekerja penuh waktu dan paruh waktu. Arahkan kursor untuk detail.</p>
+        
+        <div className="mt-6 mb-8">
+          <p className="text-base text-gray-700">
+            Visualisasi ini menampilkan perbandingan antara jumlah pekerja penuh waktu (biru) dan paruh waktu (oranye) di berbagai 
+            negara dan wilayah di Kepulauan Pasifik. Data ini penting untuk memahami pola ketenagakerjaan regional, menunjukkan bahwa 
+            beberapa negara memiliki proporsi pekerja paruh waktu yang lebih tinggi, sementara yang lain didominasi oleh pekerja penuh waktu. 
+            Perbedaan ini mencerminkan variasi dalam struktur ekonomi, pasar tenaga kerja, dan ketersediaan kesempatan kerja di setiap negara.
           </p>
-        )}
-      </ChartCard>
+        </div>
+        
+        <div className={`min-h-[${barChartHeight}px]`}>
+          {loadingBar && <Skeleton className="w-full h-[400px]" />}
+          {!loadingBar && employmentDataBar.length > 0 && (
+            <div ref={chart1ContainerRef} className="w-full" style={{height: `${barChartHeight}px`}}>
+              {chart1Dimensions.width > 0 && chart1Dimensions.height > 0 && (
+                   <EmploymentCountryComparisonBar 
+                      data={employmentDataBar} 
+                      width={chart1Dimensions.width} 
+                      height={chart1Dimensions.height}
+                   />
+              )}
+            </div>
+          )}
+          {!loadingBar && employmentDataBar.length === 0 && (
+            <p className="text-center py-10 text-gray-500">
+              {error && error.includes("Bar Chart") ? "Gagal memuat data komposisi." : "Tidak ada data komposisi untuk ditampilkan."}
+            </p>
+          )}
+        </div>
+      </div>
 
-      <Separator className="my-12" />
+      <Separator className="my-12" />      {/* Visualisasi Kedua: Line Chart Tren */}
+      <div className="my-12">
+        <h3 className="text-2xl font-semibold mb-2">Tren Total Ketenagakerjaan dari Waktu ke Waktu</h3>
+        <p className="text-gray-600 mb-4">Menampilkan perubahan jumlah total pekerja dari tahun ke tahun per negara. Pilih negara untuk difokuskan (maksimal 10 untuk performa optimal legenda).</p>
+        
+        <div className="mt-6 mb-8">
+          <p className="text-base text-gray-700">
+            Grafik ini melacak perubahan jumlah tenaga kerja di negara-negara Pasifik selama beberapa tahun. 
+            Tren ini memberikan wawasan tentang pertumbuhan atau penurunan ketenagakerjaan di berbagai negara, 
+            yang dapat dikaitkan dengan faktor ekonomi, demografis, dan sosial. Dengan membandingkan negara-negara 
+            secara berdampingan, kita dapat mengidentifikasi pola regional dan menganalisis bagaimana perkembangan 
+            ekonomi mempengaruhi pasar tenaga kerja di kawasan Pasifik.
+          </p>
+        </div>
 
-      {/* Visualisasi Kedua: Line Chart Tren */}
-      <ChartCard
-        title="Tren Total Ketenagakerjaan dari Waktu ke Waktu"
-        description="Menampilkan perubahan jumlah total pekerja dari tahun ke tahun per negara. Pilih negara untuk difokuskan (maksimal 10 untuk performa optimal legenda)."
-        contentClassName="min-h-[550px]"
-      >
         {!loadingLine && allCountryCodesForFilter.length > 0 && (
-          <div className="mb-4 p-3 border rounded-md">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium mb-2">Filter Negara:</p>
             <ScrollArea className="h-28">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-xs pr-3">
@@ -470,36 +474,45 @@ export default function HomePage() {
           </div>
         )}
 
-        {loadingLine && <Skeleton className="w-full h-[450px]" />}
-        {!loadingLine && employmentDataLine.length > 0 && (
-          <div ref={chart2ContainerRef} className="w-full h-[450px]">
-            {chart2Dimensions.width > 0 && chart2Dimensions.height > 0 && (
-                 <EmploymentTrendLineChart
-                    data={employmentDataLine} 
-                    width={chart2Dimensions.width} 
-                    height={chart2Dimensions.height}
-                    selectedCountryCodes={selectedCountriesForLine}
-                 />
-            )}
-          </div>
-        )}
-        {!loadingLine && employmentDataLine.length === 0 && (
-           <p className="text-center py-10 text-gray-500">
-            {error && error.includes("Line Chart") ? "Gagal memuat data tren." : "Tidak ada data tren untuk ditampilkan."}
+        <div className="min-h-[550px]">
+          {loadingLine && <Skeleton className="w-full h-[450px]" />}
+          {!loadingLine && employmentDataLine.length > 0 && (
+            <div ref={chart2ContainerRef} className="w-full h-[450px]">
+              {chart2Dimensions.width > 0 && chart2Dimensions.height > 0 && (
+                   <EmploymentTrendLineChart
+                      data={employmentDataLine} 
+                      width={chart2Dimensions.width} 
+                      height={chart2Dimensions.height}
+                      selectedCountryCodes={selectedCountriesForLine}
+                   />
+              )}
+            </div>
+          )}
+          {!loadingLine && employmentDataLine.length === 0 && (
+             <p className="text-center py-10 text-gray-500">
+              {error && error.includes("Line Chart") ? "Gagal memuat data tren." : "Tidak ada data tren untuk ditampilkan."}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <Separator className="my-12" />      {/* Visualisasi Ketiga: Age Composition Bar Chart */}
+      <div className="my-12">
+        <h3 className="text-2xl font-semibold mb-2">Komposisi Ketenagakerjaan Berdasarkan Kelompok Usia</h3>
+        <p className="text-gray-600 mb-4">Menampilkan perbandingan jumlah pekerja penuh waktu dan paruh waktu di berbagai kelompok usia untuk negara terpilih (data tahun terbaru yang tersedia).</p>
+        
+        <div className="mt-6 mb-8">
+          <p className="text-base text-gray-700">
+            Visualisasi ini memperlihatkan bagaimana komposisi pekerjaan (penuh waktu vs paruh waktu) bervariasi di berbagai kelompok usia. 
+            Distribusi ini menyoroti tren demografi tenaga kerja yang penting, seperti kecenderungan pekerja muda yang lebih memilih 
+            pekerjaan paruh waktu karena pendidikan atau pekerja yang lebih tua yang beralih ke pekerjaan paruh waktu 
+            menjelang pensiun. Analisis komposisi usia tenaga kerja juga membantu mengidentifikasi tantangan dalam pasar tenaga 
+            kerja seperti pengangguran usia muda atau kesenjangan keahlian antar generasi.
           </p>
-        )}
-      </ChartCard>
+        </div>
 
-      <Separator className="my-12" />
-
-      {/* Visualisasi Ketiga: Age Composition Bar Chart */}
-      <ChartCard
-        title="Komposisi Ketenagakerjaan Berdasarkan Kelompok Usia"
-        description="Menampilkan perbandingan jumlah pekerja penuh waktu dan paruh waktu di berbagai kelompok usia untuk negara terpilih (data tahun terbaru yang tersedia)."
-        contentClassName="min-h-[500px]"
-      >
         {allCountryCodesForFilter.length > 0 && (
-          <div className="mb-4 p-3 border rounded-md">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <label htmlFor="country-select-age" className="text-sm font-medium mb-1 block">Pilih Negara:</label>
             <Select 
               value={selectedCountryForAgeChart}
@@ -519,45 +532,54 @@ export default function HomePage() {
           </div>
         )}
 
-        {loadingAgeComposition && <Skeleton className="w-full h-[400px]" />}
-        {!loadingAgeComposition && errorAgeComposition && (
-          <p className="text-center py-10 text-red-500 whitespace-pre-line">
-            {errorAgeComposition}
+        <div className="min-h-[500px]">
+          {loadingAgeComposition && <Skeleton className="w-full h-[400px]" />}
+          {!loadingAgeComposition && errorAgeComposition && (
+            <p className="text-center py-10 text-red-500 whitespace-pre-line">
+              {errorAgeComposition}
+            </p>
+          )}
+          {!loadingAgeComposition && !errorAgeComposition && !ageCompositionData && selectedCountryForAgeChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Tidak ada data komposisi usia tersedia untuk negara yang dipilih.
+              </p>
+          )}
+          {!loadingAgeComposition && !errorAgeComposition && !ageCompositionData && !selectedCountryForAgeChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Silakan pilih negara untuk melihat data komposisi usia.
+              </p>
+          )}
+          {!loadingAgeComposition && !errorAgeComposition && ageCompositionData && (
+            <div ref={chart3ContainerRef} className="w-full h-[450px]">
+              {chart3Dimensions.width > 0 && chart3Dimensions.height > 0 && (
+                   <AgeCompositionBarChart
+                      data={ageCompositionData} 
+                      width={chart3Dimensions.width} 
+                      height={chart3Dimensions.height}
+                   />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Separator className="my-12" />      {/* Visualisasi Keempat: Gender Disparity Line Chart (BARU) */}
+      <div className="my-12">
+        <h3 className="text-2xl font-semibold mb-2">Disparitas Ketenagakerjaan Berdasarkan Gender (Total Pekerja)</h3>
+        <p className="text-gray-600 mb-4">Tren perbandingan jumlah pekerja laki-laki dan perempuan (total, bukan per status pekerjaan) dari waktu ke waktu untuk negara terpilih.</p>
+        
+        <div className="mt-6 mb-8">
+          <p className="text-base text-gray-700">
+            Grafik ini menunjukkan kesenjangan gender dalam pasar tenaga kerja di negara-negara Kepulauan Pasifik selama beberapa tahun. 
+            Data ini sangat penting untuk menganalisis kesetaraan gender dalam pekerjaan dan mengidentifikasi tren menuju kesetaraan atau 
+            ketidaksetaraan yang berkelanjutan. Disparitas yang signifikan atau berubah dapat mencerminkan faktor budaya, struktural, dan kebijakan 
+            yang mempengaruhi akses perempuan ke pasar tenaga kerja. Memahami perbedaan ini dapat membantu dalam merancang kebijakan 
+            yang lebih inklusif dan memberikan kesempatan yang sama bagi semua gender.
           </p>
-        )}
-        {!loadingAgeComposition && !errorAgeComposition && !ageCompositionData && selectedCountryForAgeChart && (
-            <p className="text-center py-10 text-gray-500">
-                Tidak ada data komposisi usia tersedia untuk negara yang dipilih.
-            </p>
-        )}
-        {!loadingAgeComposition && !errorAgeComposition && !ageCompositionData && !selectedCountryForAgeChart && (
-            <p className="text-center py-10 text-gray-500">
-                Silakan pilih negara untuk melihat data komposisi usia.
-            </p>
-        )}
-        {!loadingAgeComposition && !errorAgeComposition && ageCompositionData && (
-          <div ref={chart3ContainerRef} className="w-full h-[450px]">
-            {chart3Dimensions.width > 0 && chart3Dimensions.height > 0 && (
-                 <AgeCompositionBarChart
-                    data={ageCompositionData} 
-                    width={chart3Dimensions.width} 
-                    height={chart3Dimensions.height}
-                 />
-            )}
-          </div>
-        )}
-      </ChartCard>
+        </div>
 
-      <Separator className="my-12" />
-
-      {/* Visualisasi Keempat: Gender Disparity Line Chart (BARU) */}
-      <ChartCard
-        title="Disparitas Ketenagakerjaan Berdasarkan Gender (Total Pekerja)"
-        description="Tren perbandingan jumlah pekerja laki-laki dan perempuan (total, bukan per status pekerjaan) dari waktu ke waktu untuk negara terpilih."
-        contentClassName="min-h-[500px]"
-      >
         {allCountryCodesForFilter.length > 0 && (
-          <div className="mb-4 p-3 border rounded-md">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <label htmlFor="country-select-gender" className="text-sm font-medium mb-1 block">Pilih Negara:</label>
             <Select 
               value={selectedCountryForGenderChart}
@@ -577,45 +599,55 @@ export default function HomePage() {
           </div>
         )}
 
-        {loadingGenderDisparity && <Skeleton className="w-full h-[400px]" />}
-        {!loadingGenderDisparity && errorGenderDisparity && (
-          <p className="text-center py-10 text-red-500 whitespace-pre-line">
-            {errorGenderDisparity}
+        <div className="min-h-[500px]">
+          {loadingGenderDisparity && <Skeleton className="w-full h-[400px]" />}
+          {!loadingGenderDisparity && errorGenderDisparity && (
+            <p className="text-center py-10 text-red-500 whitespace-pre-line">
+              {errorGenderDisparity}
+            </p>
+          )}
+          {!loadingGenderDisparity && !errorGenderDisparity && !genderDisparityData && selectedCountryForGenderChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Tidak ada data disparitas gender tersedia untuk negara yang dipilih.
+              </p>
+          )}
+          {!loadingGenderDisparity && !errorGenderDisparity && !genderDisparityData && !selectedCountryForGenderChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Silakan pilih negara untuk melihat data disparitas gender.
+              </p>
+          )}
+          {!loadingGenderDisparity && !errorGenderDisparity && genderDisparityData && (
+            <div ref={chart4ContainerRef} className="w-full h-[450px]">
+              {chart4Dimensions.width > 0 && chart4Dimensions.height > 0 && (
+                   <GenderDisparityLineChart
+                      data={genderDisparityData} 
+                      width={chart4Dimensions.width} 
+                      height={chart4Dimensions.height}
+                   />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Separator className="my-12" />      {/* Visualisasi Kelima: Employment Ratio Trend Chart (BARU) */}
+      <div className="my-12">
+        <h3 className="text-2xl font-semibold mb-2">Tren Rasio Pekerja Penuh Waktu vs. Paruh Waktu</h3>
+        <p className="text-gray-600 mb-4">Menampilkan perubahan rasio pekerja penuh waktu terhadap paruh waktu dari tahun ke tahun untuk negara terpilih.</p>
+        
+        <div className="mt-6 mb-8">
+          <p className="text-base text-gray-700">
+            Visualisasi ini menunjukkan bagaimana rasio antara pekerja penuh waktu dan paruh waktu telah berubah seiring waktu di 
+            negara-negara Pasifik. Tren ini mencerminkan perubahan fleksibilitas pasar tenaga kerja dan juga dapat menandakan 
+            perubahan struktural dalam ekonomi. Peningkatan pekerjaan paruh waktu bisa menunjukkan ekonomi jasa yang berkembang, 
+            perubahan preferensi tenaga kerja, atau adaptasi pasar terhadap kondisi ekonomi yang berfluktuasi. Melihat tren ini 
+            membantu memahami bagaimana struktur ketenagakerjaan berevolusi dan apa implikasinya terhadap kesejahteraan ekonomi 
+            dan sosial penduduk.
           </p>
-        )}
-        {!loadingGenderDisparity && !errorGenderDisparity && !genderDisparityData && selectedCountryForGenderChart && (
-            <p className="text-center py-10 text-gray-500">
-                Tidak ada data disparitas gender tersedia untuk negara yang dipilih.
-            </p>
-        )}
-        {!loadingGenderDisparity && !errorGenderDisparity && !genderDisparityData && !selectedCountryForGenderChart && (
-            <p className="text-center py-10 text-gray-500">
-                Silakan pilih negara untuk melihat data disparitas gender.
-            </p>
-        )}
-        {!loadingGenderDisparity && !errorGenderDisparity && genderDisparityData && (
-          <div ref={chart4ContainerRef} className="w-full h-[450px]">
-            {chart4Dimensions.width > 0 && chart4Dimensions.height > 0 && (
-                 <GenderDisparityLineChart
-                    data={genderDisparityData} 
-                    width={chart4Dimensions.width} 
-                    height={chart4Dimensions.height}
-                 />
-            )}
-          </div>
-        )}
-      </ChartCard>
+        </div>
 
-      <Separator className="my-12" />
-
-      {/* Visualisasi Kelima: Employment Ratio Trend Chart (BARU) */}
-      <ChartCard
-        title="Tren Rasio Pekerja Penuh Waktu vs. Paruh Waktu"
-        description="Menampilkan perubahan rasio pekerja penuh waktu terhadap paruh waktu dari tahun ke tahun untuk negara terpilih."
-        contentClassName="min-h-[500px]"
-      >
         {allCountryCodesForFilter.length > 0 && (
-          <div className="mb-4 p-3 border rounded-md">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <label htmlFor="country-select-ratio" className="text-sm font-medium mb-1 block">Pilih Negara:</label>
             <Select 
               value={selectedCountryForRatioChart}
@@ -635,34 +667,36 @@ export default function HomePage() {
           </div>
         )}
 
-        {loadingEmploymentRatio && <Skeleton className="w-full h-[400px]" />}
-        {!loadingEmploymentRatio && errorEmploymentRatio && (
-          <p className="text-center py-10 text-red-500 whitespace-pre-line">
-            {errorEmploymentRatio}
-          </p>
-        )}
-        {!loadingEmploymentRatio && !errorEmploymentRatio && !employmentRatioData && selectedCountryForRatioChart && (
-            <p className="text-center py-10 text-gray-500">
-                Tidak ada data rasio pekerjaan tersedia untuk negara yang dipilih.
+        <div className="min-h-[500px]">
+          {loadingEmploymentRatio && <Skeleton className="w-full h-[400px]" />}
+          {!loadingEmploymentRatio && errorEmploymentRatio && (
+            <p className="text-center py-10 text-red-500 whitespace-pre-line">
+              {errorEmploymentRatio}
             </p>
-        )}
-        {!loadingEmploymentRatio && !errorEmploymentRatio && !employmentRatioData && !selectedCountryForRatioChart && (
-            <p className="text-center py-10 text-gray-500">
-                Silakan pilih negara untuk melihat data rasio pekerjaan.
-            </p>
-        )}
-        {!loadingEmploymentRatio && !errorEmploymentRatio && employmentRatioData && (
-          <div ref={chart5ContainerRef} className="w-full h-[450px]">
-            {chart5Dimensions.width > 0 && chart5Dimensions.height > 0 && (
-                 <EmploymentRatioTrendChart
-                    data={employmentRatioData} 
-                    width={chart5Dimensions.width} 
-                    height={chart5Dimensions.height}
-                 />
-            )}
-          </div>
-        )}
-      </ChartCard>
+          )}
+          {!loadingEmploymentRatio && !errorEmploymentRatio && !employmentRatioData && selectedCountryForRatioChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Tidak ada data rasio pekerjaan tersedia untuk negara yang dipilih.
+              </p>
+          )}
+          {!loadingEmploymentRatio && !errorEmploymentRatio && !employmentRatioData && !selectedCountryForRatioChart && (
+              <p className="text-center py-10 text-gray-500">
+                  Silakan pilih negara untuk melihat data rasio pekerjaan.
+              </p>
+          )}
+          {!loadingEmploymentRatio && !errorEmploymentRatio && employmentRatioData && (
+            <div ref={chart5ContainerRef} className="w-full h-[450px]">
+              {chart5Dimensions.width > 0 && chart5Dimensions.height > 0 && (
+                   <EmploymentRatioTrendChart
+                      data={employmentRatioData} 
+                      width={chart5Dimensions.width} 
+                      height={chart5Dimensions.height}
+                   />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       <Separator className="my-12" />
 
