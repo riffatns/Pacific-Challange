@@ -1,18 +1,27 @@
 "use client";
 
-import { Island } from "@/lib/types";
-import { islandColorScale, islandCoordinates } from "@/lib/utils";
-import { geoOrthographic, geoPath } from "d3-geo";
-import { FeatureCollection } from "geojson";
+import { Island, BubbleMapItem } from "@/lib/types";
+import { geoOrthographic, geoPath, GeoProjection, geoGraticule } from "d3-geo";
+import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { CircleItem } from "./CircleItem";
-
+import { feature as topoFeature } from "topojson-client"; // Import topojson-client
 import styles from "./bubble-map.module.css";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
-type BubbleMapProps = {
+// For world map background
+interface WorldTopoJSON {
+  type: string;
+  objects: {
+    [key: string]: any;
+  };
+  arcs: any[];
+}
+
+export type BubbleMapProps = {
   width: number;
   height: number;
-  data: FeatureCollection;
+  mapGeoData: FeatureCollection;
+  bubbleData: BubbleMapItem[];
   selectedIsland: Island | undefined;
   setSelectedIsland: (newIsland: Island) => void;
   scale: number;
@@ -22,83 +31,146 @@ type BubbleMapProps = {
 export const BubbleMap = ({
   width,
   height,
-  data,
+  mapGeoData,
+  bubbleData,
   selectedIsland,
   setSelectedIsland,
   scale,
   bubbleSize,
 }: BubbleMapProps) => {
-  const bubbleContainerRef = useRef(null);
+  const bubbleContainerRef = useRef<SVGGElement | null>(null);
+  const [worldGeoJSON, setWorldGeoJSON] = useState<FeatureCollection | null>(null);
+
+  // Fetch world map data
+  useEffect(() => {
+    const fetchWorldMap = async () => {
+      try {
+        const response = await fetch("https://unpkg.com/world-atlas@2.0.2/countries-110m.json");
+        if (!response.ok) {
+          throw new Error("Failed to load world map data");
+        }
+        const worldTopoJSON = await response.json();
+
+        // Convert TopoJSON to GeoJSON
+        const countries = topoFeature(
+          worldTopoJSON,
+          worldTopoJSON.objects.countries
+        ) as unknown as FeatureCollection;
+
+        setWorldGeoJSON(countries);
+      } catch (error) {
+        console.error("Error loading world map:", error);
+      }
+    };
+
+    fetchWorldMap();
+  }, []);
 
   const projection = geoOrthographic()
-    .rotate([200, 5])
-    .scale(scale)
+    .rotate([170, -15]) // Mengubah rotasi untuk fokus ke wilayah Pasifik [bujur, lintang]
+    .scale(scale * 1.5) // Meningkatkan skala untuk memperbesar area yang ditampilkan
     .translate([width / 2, height / 2]);
 
   const geoPathGenerator = geoPath().projection(projection);
 
-  const allSvgPaths = data.features
-    .filter((shape) => shape.id !== "ATA")
-    .map((shape) => {
+  // Create graticule for grid lines
+  const graticule = geoGraticule();
+
+  // Render world map background if available
+  let worldMapPaths: JSX.Element[] = [];
+  if (worldGeoJSON && worldGeoJSON.features) {
+    worldMapPaths = worldGeoJSON.features.map((feature: Feature, i: number) => {
+      const pathData = geoPathGenerator(feature);
       return (
         <path
-          key={shape.id}
-          d={geoPathGenerator(shape)}
-          stroke="lightGrey"
-          strokeWidth={0.5}
-          fill="grey"
-          fillOpacity={0.7}
+          key={`world-${feature.id || i}`}
+          d={pathData || ""}
+          fill="#d1dde9"
+          stroke="#a0b3c6"
+          strokeWidth={0.2}
         />
       );
     });
+  }
 
-  //
-  //
-  // ALL ISLAND
-  //
-  //
-  const allBubbles = islandCoordinates.map((island) => {
-    const [x, y] = projection(island.coordinates);
+  // Render graticule (grid lines)
+  const graticulePath = geoPathGenerator(graticule());
 
-    const color =
-      selectedIsland === island.name || !selectedIsland
-        ? islandColorScale(island.name)
-        : "black";
+  // Render bubbles from bubbleData
+  const allBubbles = bubbleData.map((item: BubbleMapItem) => {
+    const [x, y] = projection(item.coordinates as [number, number]) || [0, 0];
 
-    const r =
-      selectedIsland === island.name || !selectedIsland
-        ? bubbleSize * 2
-        : bubbleSize;
-
+    // Skip if projection returned null or default coordinates
+    if (x === 0 && y === 0 && item.coordinates[0] !== 0 && item.coordinates[1] !== 0) {
+      return null;
+    }
+    
+    // Determine bubble size based on value and selection state
+    const baseSize = bubbleSize;
+    // Menggunakan nilai yang lebih konsisten untuk skala bubble
+    const valueScale = Math.sqrt(item.value) / 100;
+    const normalizedScale = Math.max(0.8, Math.min(2, valueScale));
+    const selectionMultiplier = selectedIsland === item.name || !selectedIsland ? 1.3 : 1;
+    const r = baseSize * normalizedScale * selectionMultiplier;
+    
+    // Determine color based on selection
+    const color = selectedIsland === item.name
+      ? "rgba(25, 118, 210, 0.9)" // Biru lebih gelap untuk yang terpilih
+      : "rgba(66, 165, 245, 0.8)"; // Biru lebih mencolok untuk semua bubble
+    
     return (
-      <g className={styles.circleContainer} key={island.name}>
+      <g className={styles.circleContainer} key={item.id}>
         <CircleItem
           x={x}
           y={y}
           r={r}
           color={color}
           onClick={() => {
-            setSelectedIsland(island.name);
+            setSelectedIsland(item.name);
           }}
         />
         <text
           className={styles.circleText}
-          x={x < width - 100 ? x + r + 5 : x - r - 5}
+          x={x < width - 100 ? x + r + 2 : x - r - 2} // Lebih dekat ke bubble
           y={y}
-          fill={color}
+          fill={selectedIsland === item.name ? "#1565C0" : "#333"} // Teks lebih gelap untuk keterbacaan
           alignmentBaseline="middle"
           textAnchor={x < width - 100 ? "start" : "end"}
+          fontSize="12px" // Ukuran teks yang lebih besar
+          fontWeight={selectedIsland === item.name ? "bold" : "normal"}
         >
-          {island.name}
+          {item.name}
         </text>
       </g>
     );
   });
 
   return (
-    <div>
+    <div className={styles.mapContainer}>
       <svg width={width} height={height}>
-        {allSvgPaths}
+        {/* Background globe */}
+        <circle
+          cx={width / 2}
+          cy={height / 2}
+          r={scale * 1.5} // Menyesuaikan dengan skala proyeksi yang diubah
+          fill="#e3f2fd" // Warna biru yang lebih terang untuk lautan
+          stroke="#90caf9" 
+          strokeWidth={1}
+        />
+        
+        {/* Graticule (grid lines) */}
+        <path
+          d={graticulePath || ""}
+          fill="none"
+          stroke="#bbdefb"
+          strokeWidth={0.5}
+          strokeDasharray="2,2"
+        />
+        
+        {/* World map countries */}
+        {worldMapPaths}
+        
+        {/* Bubbles and labels */}
         <g
           ref={bubbleContainerRef}
           onMouseOver={() => {

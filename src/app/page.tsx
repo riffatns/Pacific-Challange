@@ -30,23 +30,25 @@ import EmploymentTrendLineChart from '../dataviz/EmploymentTrendLineChart';
 import AgeCompositionBarChart from '../dataviz/AgeCompositionBarChart';
 import GenderDisparityLineChart from '../dataviz/GenderDisparityLineChart'; // Baru
 import EmploymentRatioTrendChart from '../dataviz/EmploymentRatioTrendChart'; // Baru
+import { BubbleMap } from '../dataviz/bubbleMap/BubbleMap'; // Removed BubbleMapProps, will be defined in BubbleMap
+import { FeatureCollection } from 'geojson';
+import type { BubbleMapItem, Island } from '@/lib/types'; // Import BubbleMapItem
 
 // Tipe dan Pemuat Data
 import {
     loadEmploymentData,
     loadEmploymentTimeSeriesData,
     loadAgeSpecificEmploymentData,
-    loadGenderEmploymentData, // Baru
-    loadEmploymentRatioTrendData, // Baru
-} from '../lib/data-loader';
-import {
-    EmploymentDataPoint,
+    loadGenderEmploymentData, 
+    loadEmploymentRatioTrendData, 
+    EmploymentDataPoint, // Ensure EmploymentDataPoint is imported
     CountryTimeSeriesData,
     CountryAgeSpecificEmploymentData,
     CountryOption,
-    CountryGenderEmploymentData, // Baru
-    CountryEmploymentRatioTrend, // Baru
-} from '../lib/types';
+    CountryGenderEmploymentData,
+    CountryEmploymentRatioTrend,
+    // BubbleMapItem, // Already imported above
+} from '../lib/data-loader'; // Adjusted to import from data-loader assuming types are re-exported or defined there
 
 // Hook untuk dimensi
 const useResizeObserver = <T extends HTMLElement>() => {
@@ -93,31 +95,88 @@ export default function HomePage() {
   const [employmentDataBar, setEmploymentDataBar] = useState<EmploymentDataPoint[]>([]);
   const [employmentDataLine, setEmploymentDataLine] = useState<CountryTimeSeriesData[]>([]);
   const [ageCompositionData, setAgeCompositionData] = useState<CountryAgeSpecificEmploymentData | null>(null);
-  const [genderDisparityData, setGenderDisparityData] = useState<CountryGenderEmploymentData | null>(null); // Baru
-  const [employmentRatioData, setEmploymentRatioData] = useState<CountryEmploymentRatioTrend | null>(null); // Baru
+  const [genderDisparityData, setGenderDisparityData] = useState<CountryGenderEmploymentData | null>(null);
+  const [employmentRatioData, setEmploymentRatioData] = useState<CountryEmploymentRatioTrend | null>(null);
   
+  // State variables for loading and error states that were missing
   const [loadingBar, setLoadingBar] = useState(true);
   const [loadingLine, setLoadingLine] = useState(true);
   const [loadingAgeComposition, setLoadingAgeComposition] = useState(false);
-  const [loadingGenderDisparity, setLoadingGenderDisparity] = useState(false); // Baru
-  const [loadingEmploymentRatio, setLoadingEmploymentRatio] = useState(false); // Baru
+  const [loadingGenderDisparity, setLoadingGenderDisparity] = useState(false);
+  const [loadingEmploymentRatio, setLoadingEmploymentRatio] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [errorAgeComposition, setErrorAgeComposition] = useState<string | null>(null);
-  const [errorGenderDisparity, setErrorGenderDisparity] = useState<string | null>(null); // Baru
-  const [errorEmploymentRatio, setErrorEmploymentRatio] = useState<string | null>(null); // Baru
+  const [errorGenderDisparity, setErrorGenderDisparity] = useState<string | null>(null);
+  const [errorEmploymentRatio, setErrorEmploymentRatio] = useState<string | null>(null);
 
+  // State for BubbleMap
+  const [geoJsonData, setGeoJsonData] = useState<FeatureCollection | null>(null);
+  const [bubbleMapItems, setBubbleMapItems] = useState<BubbleMapItem[]>([]); // Use BubbleMapItem[] type
+  const [loadingGeoJson, setLoadingGeoJson] = useState(true);
+  const [selectedIsland, setSelectedIsland] = useState<Island | undefined>(undefined); // Island is string
+  
   const { ref: chart1ContainerRef, dimensions: chart1Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart2ContainerRef, dimensions: chart2Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart3ContainerRef, dimensions: chart3Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart4ContainerRef, dimensions: chart4Dimensions } = useResizeObserver<HTMLDivElement>(); // Baru
   const { ref: chart5ContainerRef, dimensions: chart5Dimensions } = useResizeObserver<HTMLDivElement>(); // Baru
+  const { ref: mapContainerRef, dimensions: mapDimensions } = useResizeObserver<HTMLDivElement>(); // Added for BubbleMap
 
   const [selectedCountriesForLine, setSelectedCountriesForLine] = useState<string[]>([]); 
   const [allCountryCodesForFilter, setAllCountryCodesForFilter] = useState<CountryOption[]>([]);
   const [selectedCountryForAgeChart, setSelectedCountryForAgeChart] = useState<string | undefined>(undefined);
   const [selectedCountryForGenderChart, setSelectedCountryForGenderChart] = useState<string | undefined>(undefined); // Baru
   const [selectedCountryForRatioChart, setSelectedCountryForRatioChart] = useState<string | undefined>(undefined); // Baru
+
+  useEffect(() => {
+    // Fungsi untuk memuat data GeoJSON
+    const fetchGeoJson = async () => {
+      setLoadingGeoJson(true);
+      try {
+        // Ensure this path is correct and the file is available in your public folder
+        const response = await fetch('/world-pacific.geojson'); 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const jsonData = await response.json();
+        setGeoJsonData(jsonData as FeatureCollection);
+      } catch (error) {
+        console.error("Gagal memuat data GeoJSON:", error);
+        setGeoJsonData(null); 
+      } finally {
+        setLoadingGeoJson(false);
+      }
+    };
+
+    fetchGeoJson();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // GeoJSON fetching should be independent and run once
+
+  // Process data for the bubble map when employmentDataBar or geoJsonData changes
+  useEffect(() => {
+    if (employmentDataBar.length > 0 && geoJsonData) {
+      const countryCoordinatesMap = new Map<string, [number, number]>();
+      geoJsonData.features.forEach(feature => {
+        if (feature.properties && feature.properties.name && feature.geometry && feature.geometry.type === 'Point') {
+          const geom = feature.geometry as GeoJSON.Point; // Type assertion
+          countryCoordinatesMap.set(feature.properties.name, geom.coordinates as [number, number]);
+        }
+      });
+
+      const processedBubbleData = employmentDataBar.map(item => {
+        const coordinates = countryCoordinatesMap.get(item.countryName);
+        return {
+          id: item.countryName, // Assuming countryName is unique for ID, or use countryCode if available
+          name: item.countryName,
+          value: item.totalEmployed,
+          coordinates: coordinates || [0, 0], // Default to [0,0] if not found
+        };
+      }).filter(item => item.coordinates[0] !== 0 || item.coordinates[1] !== 0); // Filter out those with default [0,0]
+
+      setBubbleMapItems(processedBubbleData as BubbleMapItem[]); // Ensure type
+    }
+  }, [employmentDataBar, geoJsonData]); // Depend on both
 
   useEffect(() => {
     const fetchData = async () => {
@@ -191,7 +250,7 @@ export default function HomePage() {
     };
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Initial data load, selected countries for new charts are set here
+  }, []); // Initial data load
 
   useEffect(() => {
     if (!selectedCountryForAgeChart) {
@@ -293,23 +352,58 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header - Women in the Pacific - This seems to be duplicated, removing one instance */}
+      {/* 
+      <div className="mb-16 text-center">
+        <p className="text-sm uppercase text-gray-500 tracking-wider">A LOOK AT EMPLOYMENT IN THE PACIFIC</p>
+        <PageTitle 
+          title="Employment in the Pacific"
+        />
+        <Description className="max-w-2xl mx-auto">
+          Employment dynamics in the Pacific islands reveal diverse trends. This essay
+          explores these dynamics, despite varying access to full-time and part-time opportunities.
+        </Description>
+      </div>
+      */}
+
+      {/* New Section: A LOOK AT EMPLOYMENT IN THE PACIFIC + BubbleMap */}
+      <div className="text-center py-8 md:py-12">
+        <p className="text-sm uppercase text-gray-500 tracking-wider">A LOOK AT EMPLOYMENT IN THE PACIFIC</p>
+        <PageTitle 
+          title="Employment in the Pacific"
+        />
+        <Description className="max-w-2xl mx-auto">
+          Employment dynamics in the Pacific islands reveal diverse trends. This essay
+          explores these dynamics, despite varying access to full-time and part-time opportunities.
+        </Description>
+      </div>
+
+      <div ref={mapContainerRef} className="w-full h-[500px] md:h-[600px] mb-12 relative">
+        {loadingGeoJson && <Skeleton className="w-full h-full" />}
+        {!loadingGeoJson && geoJsonData && mapDimensions.width > 0 && mapDimensions.height > 0 && (
+          <BubbleMap
+            width={mapDimensions.width}
+            height={mapDimensions.height}
+            mapGeoData={geoJsonData} 
+            bubbleData={bubbleMapItems} 
+            scale={250} // Ditingkatkan dari 180 menjadi 250 untuk memperbesar area terlihat
+            bubbleSize={12} // Disesuaikan dari 15 menjadi 12 agar proporsional dengan area yang lebih fokus
+            selectedIsland={selectedIsland}
+            setSelectedIsland={setSelectedIsland}
+          />
+        )}
+        {!loadingGeoJson && !geoJsonData && (
+          <p className="text-center py-10 text-gray-500">Gagal memuat data peta geografis. Pastikan file GeoJSON ada di public/world-pacific.geojson</p>
+        )}
+      </div>
+      
+      <Separator className="my-8" /> {/* Separator after the map section */}
+      {/* End of New Section */}
+
       <PageTitle 
         title="Analisis Ketenagakerjaan di Kepulauan Pasifik"
         subtitle="Visualisasi Tren dan Komposisi Tenaga Kerja Regional"
       />
-      <Description className="max-w-3xl mx-auto text-center">
-        Selamat datang di dasbor analisis ketenagakerjaan untuk negara-negara dan wilayah Kepulauan Pasifik.
-        Proyek ini bertujuan untuk menyajikan data ketenagakerjaan dari Pacific Community (SPC)
-        dalam format visual yang informatif dan menarik.
-      </Description>
-      <Separator className="my-8" />
-
-      {error && (
-        <div className="my-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md whitespace-pre-line">
-          <p className="font-semibold">Informasi Tambahan:</p>
-          {error}
-        </div>
-      )}
 
       {/* Visualisasi Pertama: Bar Chart Komposisi */}
       <ChartCard

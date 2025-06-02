@@ -1,4 +1,5 @@
 // src/lib/types.ts
+export type Island = string;
 
 // Data mentah dari CSV (sesuai kolom yang Anda berikan)
 export interface RawCsvData {
@@ -104,22 +105,24 @@ export interface GenderSpecificValue {
 export interface CountryGenderEmploymentData {
   countryCode: string;
   countryName: string;
-  // employmentStatus: 'FT' | 'PT' | '_T'; // This will be a parameter to the loader
   trend: GenderSpecificValue[];
 }
 
-// Types for Employment Ratio Trends Chart (Idea 3)
 export interface EmploymentRatioPoint {
   year: number;
-  fullTimePercentage: number;
-  partTimePercentage: number;
-  fullTimeCount?: number; // Added for tooltip
-  partTimeCount?: number; // Added for tooltip
-  ratio?: number | null; // Added for the chart's line (FT/PT ratio)
+  ratio: number | null; // Employment to population ratio - Allow null
 }
 
 export interface CountryEmploymentRatioTrend {
   countryCode: string;
   countryName: string;
   values: EmploymentRatioPoint[];
+}
+
+// Data point for Bubble Map
+export interface BubbleMapItem {
+  id: string; // country code
+  value: number; // total employed or other metric for bubble size
+  name: string; // country name
+  coordinates: [number, number]; // longitude, latitude
 }

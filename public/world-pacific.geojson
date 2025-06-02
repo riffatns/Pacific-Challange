@@ -1,0 +1,247 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fiji",
+        "iso_a2": "FJ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [178, -18]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vanuatu",
+        "iso_a2": "VU"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [167, -16]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Solomon Islands",
+        "iso_a2": "SB"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [159, -8]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Papua New Guinea",
+        "iso_a2": "PG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [147, -6]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "New Caledonia",
+        "iso_a2": "NC"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [165.5, -21.5]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Samoa",
+        "iso_a2": "WS"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-172.5, -13.75]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tonga",
+        "iso_a2": "TO"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-175, -20]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kiribati",
+        "iso_a2": "KI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-157.33, 1.83] 
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tuvalu",
+        "iso_a2": "TV"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [179.196, -8.52]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nauru",
+        "iso_a2": "NR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [166.93, -0.52]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Marshall Islands",
+        "iso_a2": "MH"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [171.20, 7.13]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Micronesia",
+        "iso_a2": "FM"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [158.22, 6.91]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Palau",
+        "iso_a2": "PW"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [134.58, 7.51]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cook Islands",
+        "iso_a2": "CK"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-159.77, -21.23]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Niue",
+        "iso_a2": "NU"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-169.86, -19.05]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tokelau",
+        "iso_a2": "TK"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.84, -9.16]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wallis and Futuna",
+        "iso_a2": "WF"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-176.17, -13.30]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "French Polynesia",
+        "iso_a2": "PF"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-149.40, -17.67]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pitcairn Islands",
+        "iso_a2": "PN"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-130.10, -25.06]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Guam",
+        "iso_a2": "GU"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [144.79, 13.44]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Northern Mariana Islands",
+        "iso_a2": "MP"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [145.76, 15.19]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "American Samoa",
+        "iso_a2": "AS"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-170.70, -14.27]
+      }
+    }
+  ]
+}

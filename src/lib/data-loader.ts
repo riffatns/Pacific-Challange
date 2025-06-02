@@ -1,6 +1,7 @@
 // src/lib/data-loader.ts
 import * as d3 from 'd3';
-import {
+// Import types for use within this module
+import type {
   EmploymentDataPoint,
   RawCsvData,
   CountryTimeSeriesData,
@@ -10,8 +11,26 @@ import {
   CountryGenderEmploymentData,
   GenderSpecificValue,
   CountryEmploymentRatioTrend,
-  EmploymentRatioPoint
+  EmploymentRatioPoint,
+  CountryOption, // Added CountryOption
+  BubbleMapItem // Added BubbleMapItem
 } from './types';
+
+// Re-export types for consumers of this module
+export type {
+  EmploymentDataPoint,
+  RawCsvData,
+  CountryTimeSeriesData,
+  TimeSeriesPoint,
+  CountryAgeSpecificEmploymentData,
+  AgeSpecificEmploymentValue,
+  CountryGenderEmploymentData,
+  GenderSpecificValue,
+  CountryEmploymentRatioTrend,
+  EmploymentRatioPoint,
+  CountryOption,
+  BubbleMapItem
+};
 
 // --- PLACEHOLDER IDENTIFIERS ---
 // !! PENTING: GANTI PLACEHOLDER INI DENGAN NILAI SEBENARNYA DARI DATASET ANDA !!
@@ -439,14 +458,14 @@ export const loadEmploymentRatioTrendData = async (
       .sort((a, b) => a.year - b.year);
 
     if (values.length === 0) {
-      console.warn(`[RatioChart] Not enough valid data to calculate ratios for ${countryName}. Original filtered count: ${countryData.length}`);
-      return { // Return with empty values if country is valid but no ratio data
+      console.warn(`[RatioChart] No valid ratio data points found for ${countryName} (${countryCode}).`);
+      return {
         countryCode,
         countryName,
-        values: [],
+        values: [], // Return empty array for values
       };
     }
-    console.log(`[RatioChart] Processed ratio trend for ${countryName}:`, values);
+    console.log(`[RatioChart] Processed employment ratio trend for ${countryName}:`, values);
 
     return {
       countryCode,

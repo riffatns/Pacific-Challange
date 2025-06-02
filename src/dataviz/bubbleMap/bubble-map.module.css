@@ -1,5 +1,15 @@
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  background: #f8fbff;
+}
+
 .circleContainer {
-  transition: opacity 0.5s ease-in-out;
+  transition: all 0.2s ease;
 }
 
 /* When the bubble g group is hovered, make everything inside with a low opacity */
@@ -9,12 +19,17 @@
 
 .hasHighlight .circleContainer:hover {
   opacity: 1;
+  cursor: pointer;
 }
 
 .circleText {
-  opacity: 0;
+  opacity: 0.8;
+  font-size: 12px;
+  pointer-events: none; /* Prevents text from blocking mouse events */
+  transition: opacity 0.2s ease, font-weight 0.2s ease;
 }
 
-.hasHighlight .circleContainer:hover .circleText {
+.circleContainer:hover .circleText {
   opacity: 1;
+  font-weight: 600;
 }
