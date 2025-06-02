@@ -382,7 +382,7 @@ export default function HomePage() {
       </div>
       </div>
 
-      <p className="text-center text-sm text-gray-500 italic mb-6">A project by riffatns</p>
+      <p className="text-center text-sm text-gray-500 italic mb-6">A project by <a href="https://github.com/riffatns/Pacific-Challange" target="_blank" rel="noopener noreferrer" className="hover:underline">riffatns</a></p>
 
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-gray-100 opacity-50 z-0"></div>
