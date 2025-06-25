@@ -29,7 +29,7 @@
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "lucide-react": "^0.416.0",
-    "next": "14.2.5",
+    "next": "^14.2.30",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.4.0",

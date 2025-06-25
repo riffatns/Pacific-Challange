@@ -44,6 +44,7 @@ const AGE_GROUP_MAP: { [key: string]: string } = {
   'Y15T24': '15-24 years',
   'Y25T54': '25-54 years',
   'Y55T64': '55-64 years',
+  'Y65T999': '65-99 years', // Updated to match actual CSV data
   'Y65+': '65+ years',
   'Y15T19': '15-19 years',
   'Y20T24': '20-24 years',
