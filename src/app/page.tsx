@@ -32,7 +32,7 @@ import {
 
 // Komponen Visualisasi
 // ... (import lainnya tetap sama)
-import EmploymentCountryComparisonBar from '../dataviz/EmploymentCountryComparisonBar';
+import EmploymentCompositionDivergingBar from '../dataviz/EmploymentCompositionDivergingBar';
 import EmploymentTrendLineChart from '../dataviz/EmploymentTrendLineChart';
 import AgeCompositionBarChart from '../dataviz/AgeCompositionBarChart';
 import GenderDisparityLineChart from '../dataviz/GenderDisparityLineChart'; 
@@ -422,7 +422,7 @@ export default function HomePage() {
           {!loadingBar && employmentDataBar.length > 0 && (
             <div ref={chart1ContainerRef} className="w-full" style={{height: `${barChartHeight}px`}}>
               {chart1Dimensions.width > 0 && chart1Dimensions.height > 0 && (
-                   <EmploymentCountryComparisonBar 
+                   <EmploymentCompositionDivergingBar 
                       data={employmentDataBar} 
                       width={chart1Dimensions.width} 
                       height={chart1Dimensions.height}
@@ -436,9 +436,10 @@ export default function HomePage() {
         </div>        {!loadingBar && employmentDataBar.length > 0 && (
           <div className="mt-6">
             <p className="text-base leading-relaxed text-slate-600 italic">
-              The data reveals distinct employment cultures across the Pacific, 
-              with some nations maintaining traditional full-time work structures while others have adapted to more flexible labor arrangements, 
-              reflecting varying stages of economic development and social adaptation.
+              This diverging bar chart reveals the employment composition across Pacific Island nations, 
+              clearly separating full-time (blue, left) and part-time (orange, right) employment patterns. 
+              The central divide emphasizes how different countries balance traditional employment structures with flexible work arrangements, 
+              reflecting their unique economic development stages and labor market preferences.
             </p>
           </div>
         )}
