@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { CountryTimeSeriesData, EmploymentTrendLineChartProps, TimeSeriesPoint } from '../lib/types';
 import { formatSIAxis } from '../lib/d3-utils';
 
-const MARGIN = { top: 30, right: 180, bottom: 60, left: 70 }; // Increased right margin for wider legend
+const MARGIN = { top: 60, right: 180, bottom: 60, left: 70 }; // Increased top margin to avoid filter overlap
 
 const EmploymentTrendLineChart = ({
   data,
@@ -89,68 +89,138 @@ const EmploymentTrendLineChart = ({
       .range([innerHeight, 0])
       .nice();
 
-    // Use an extended color palette since we may have many countries
+    // Enhanced color palette matching bubble chart
     const colorScale = d3.scaleOrdinal<string>()
       .domain(displayData.map(d => d.countryCode))
-      .range([...d3.schemeCategory10, ...d3.schemeSet2, ...d3.schemePaired, ...d3.schemeTableau10].slice(0, 30));
+      .range([
+        '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+        '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1',
+        '#14b8a6', '#f472b6', '#8b5a2b', '#6366f1', '#dc2626',
+        '#059669', '#d97706', '#7c3aed', '#0891b2', '#ea580c'
+      ]);
 
-    // Create line generator with better interpolation for missing data
+    // Enhanced line generator with smooth curves
     const lineGenerator = d3.line<TimeSeriesPoint>()
       .x(d => xScale(d.year))
       .y(d => yScale(d.value))
-      .curve(d3.curveMonotoneX); // Use monotone curve for smoother lines that pass through all points
+      .curve(d3.curveCardinal.tension(0.3)); // Smoother curves with tension
 
-    // Tooltip Element
+    // Enhanced tooltip styling - matching bubble chart
     let tooltip = d3.select<HTMLDivElement, unknown>(`#tooltip-linechart`);
     if (tooltip.empty()) {
       tooltip = d3.select("body").append("div")
         .attr("id", "tooltip-linechart")
-        .attr("class", "tooltip absolute p-2 text-xs bg-opacity-80 bg-white border border-gray-300 rounded shadow-lg pointer-events-none z-10")
-        .style("visibility", "hidden");
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background", "linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(30, 30, 30, 0.9))")
+        .style("color", "white")
+        .style("padding", "12px 16px")
+        .style("border-radius", "12px")
+        .style("font-size", "13px")
+        .style("pointer-events", "none")
+        .style("z-index", "9999")
+        .style("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.3)")
+        .style("border", "1px solid rgba(255, 255, 255, 0.1)")
+        .style("backdrop-filter", "blur(10px)");
     }
 
-    // For clearer visualization with many lines, apply a thin transparent stroke first
-    displayData.forEach((country) => {
+    // Add subtle grid lines for better readability
+    const xGridGroup = chartGroup.append('g').attr('class', 'grid-x');
+    const yGridGroup = chartGroup.append('g').attr('class', 'grid-y');
+
+    // X grid lines
+    xGridGroup
+      .selectAll('.grid-line-x')
+      .data(xScale.ticks(Math.min(maxYear - minYear + 1, 8)))
+      .enter()
+      .append('line')
+      .attr('class', 'grid-line-x')
+      .attr('x1', d => xScale(d))
+      .attr('x2', d => xScale(d))
+      .attr('y1', 0)
+      .attr('y2', innerHeight)
+      .attr('stroke', '#e5e7eb')
+      .attr('stroke-width', 0.5)
+      .attr('opacity', 0.4);
+
+    // Y grid lines
+    yGridGroup
+      .selectAll('.grid-line-y')
+      .data(yScale.ticks(5))
+      .enter()
+      .append('line')
+      .attr('class', 'grid-line-y')
+      .attr('x1', 0)
+      .attr('x2', innerWidth)
+      .attr('y1', d => yScale(d))
+      .attr('y2', d => yScale(d))
+      .attr('stroke', '#e5e7eb')
+      .attr('stroke-width', 0.5)
+      .attr('opacity', 0.4);
+
+    // Enhanced line drawing with gradient effects and better styling
+    displayData.forEach((country, index) => {
       // Ensure data is sorted by year
       const sortedValues = [...country.values].sort((a, b) => a.year - b.year);
       
-      // Draw thicker transparent line as background for better visibility
-      chartGroup.append('path')
-        .datum(sortedValues)
-        .attr('fill', 'none')
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', 4)
-        .attr('stroke-opacity', 0.5)
-        .attr('d', lineGenerator);
+      // Create gradient for each line
+      const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", `line-gradient-${country.countryCode}`)
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0).attr("y1", 0)
+        .attr("x2", innerWidth).attr("y2", 0);
+
+      gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", colorScale(country.countryCode))
+        .attr("stop-opacity", 0.8);
+
+      gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", colorScale(country.countryCode))
+        .attr("stop-opacity", 1);
         
-      // Draw actual colored line
+      // Draw enhanced line with shadow effect
       chartGroup.append('path')
         .datum(sortedValues)
         .attr('fill', 'none')
-        .attr('stroke', colorScale(country.countryCode))
-        .attr('stroke-width', 2)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 4)
+        .attr('stroke-opacity', 0.1)
+        .attr('d', lineGenerator)
+        .attr('transform', 'translate(1,1)'); // Shadow offset
+        
+      // Draw main colored line with gradient
+      const mainLine = chartGroup.append('path')
+        .datum(sortedValues)
+        .attr('fill', 'none')
+        .attr('stroke', `url(#line-gradient-${country.countryCode})`)
+        .attr('stroke-width', 3)
         .attr('d', lineGenerator)
         .attr('class', `line line-${country.countryCode}`)
+        .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))')
+        .style('transition', 'all 0.3s ease')
         .on("mouseover", function (event) {
           // Dim all lines
-          d3.selectAll(`.line`).style('opacity', '0.2');
+          d3.selectAll(`.line`).style('opacity', '0.3');
           // Highlight this line
-          d3.select(this).style('opacity', '1').attr('stroke-width', '3');
+          d3.select(this).style('opacity', '1').attr('stroke-width', '4');
           
           tooltip.style("visibility", "visible")
-                 .html(`<b>${country.countryName}</b>`)
-                 .style("top", (event.pageY - 25) + "px")
-                 .style("left", (event.pageX + 10) + "px")
-                 .style("background-color", colorScale(country.countryCode))
-                 .style("color", "white");
+                 .html(`<div style="font-weight: bold; margin-bottom: 4px;">${country.countryName}</div>
+                        <div style="font-size: 11px; color: #ccc;">Click line to see details</div>`)
+                 .style("top", (event.pageY - 15) + "px")
+                 .style("left", (event.pageX + 15) + "px");
         })
         .on("mouseout", function () {
           // Restore all lines
-          d3.selectAll(`.line`).style('opacity', '1').attr('stroke-width', '2');
+          d3.selectAll(`.line`).style('opacity', '1').attr('stroke-width', '3');
           tooltip.style("visibility", "hidden");
         });
         
-      // Add data points as circles for better visibility
+      // Add enhanced data points as circles
       chartGroup.selectAll(`.dot-${country.countryCode}`)
         .data(sortedValues)
         .enter()
@@ -158,58 +228,137 @@ const EmploymentTrendLineChart = ({
         .attr('class', `dot-${country.countryCode}`)
         .attr('cx', d => xScale(d.year))
         .attr('cy', d => yScale(d.value))
-        .attr('r', 3)
+        .attr('r', 4)
         .attr('fill', colorScale(country.countryCode))
-        .style('opacity', 0.7);
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', 2)
+        .style('opacity', 0.9)
+        .style('cursor', 'pointer')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15))')
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('r', 6)
+            .style('filter', 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))');
+          
+          tooltip.style("visibility", "visible")
+                 .html(`<div style="font-weight: bold; margin-bottom: 8px;">${country.countryName}</div>
+                        <div style="margin-bottom: 4px;"><strong>Year:</strong> ${d.year}</div>
+                        <div><strong>Employment:</strong> ${d.value.toLocaleString()}</div>`)
+                 .style("top", (event.pageY - 15) + "px")
+                 .style("left", (event.pageX + 15) + "px");
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('r', 4)
+            .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15))');
+          
+          tooltip.style("visibility", "hidden");
+        });
     });
 
-    // X axis with year labels
+    // Enhanced X axis with better styling
     const xAxis = d3.axisBottom(xScale)
                   .ticks(Math.min(maxYear - minYear + 1, 10))
                   .tickFormat(d3.format("d"));
     
-    chartGroup.append('g')
+    const xAxisGroup = chartGroup.append('g')
       .attr('transform', `translate(0, ${innerHeight})`)
-      .call(xAxis)
-      .append("text")
-        .attr("y", MARGIN.bottom - 20)
-        .attr("x", innerWidth / 2)        .attr("text-anchor", "middle")
-        .attr("fill", "currentColor")
-        .attr("class", "text-sm")
+      .call(xAxis);
+    
+    // Style x-axis
+    xAxisGroup.selectAll('.domain')
+      .attr('stroke', '#4b5563')
+      .attr('stroke-width', 2);
+    
+    xAxisGroup.selectAll('.tick line')
+      .attr('stroke', '#6b7280')
+      .attr('stroke-width', 1);
+    
+    xAxisGroup.selectAll('.tick text')
+      .attr('fill', '#374151')
+      .attr('font-size', '12px')
+      .attr('font-weight', '500');
+    
+    xAxisGroup.append("text")
+        .attr("y", 45)
+        .attr("x", innerWidth / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#374151")
+        .attr("font-size", "14px")
+        .attr("font-weight", "600")
         .text("Year");
 
-    // Y axis with formatted numbers
+    // Enhanced Y axis with better styling
     const yAxis = d3.axisLeft(yScale)
                   .ticks(5)
                   .tickFormat(formatSIAxis);
                   
-    chartGroup.append('g')
-      .call(yAxis)
-      .append("text")
+    const yAxisGroup = chartGroup.append('g')
+      .call(yAxis);
+    
+    // Style y-axis
+    yAxisGroup.selectAll('.domain')
+      .attr('stroke', '#4b5563')
+      .attr('stroke-width', 2);
+    
+    yAxisGroup.selectAll('.tick line')
+      .attr('stroke', '#6b7280')
+      .attr('stroke-width', 1);
+    
+    yAxisGroup.selectAll('.tick text')
+      .attr('fill', '#374151')
+      .attr('font-size', '12px')
+      .attr('font-weight', '500');
+    
+    yAxisGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", -MARGIN.left + 20)
+        .attr("y", -50)
         .attr("x", -innerHeight / 2)
         .attr("text-anchor", "middle")
-        .attr("fill", "currentColor")
-        .attr("class", "text-sm")
+        .attr("fill", "#374151")
+        .attr("font-size", "14px")
+        .attr("font-weight", "600")
         .text("Number of Workers");
 
-    // Create a scrollable legend for many countries
-    const legendContainerHeight = Math.min(innerHeight, 380); // Increased max height for more countries
+    // Enhanced legend with better styling
+    const legendContainerHeight = Math.min(innerHeight, 380);
     
     const legendContainer = chartGroup.append('g')
       .attr('class', 'legend-container')
-      .attr('transform', `translate(${innerWidth + 10}, 0)`);
+      .attr('transform', `translate(${innerWidth + 15}, 0)`);
       
-    // Background for the legend for better readability
+    // Enhanced background for the legend
     legendContainer.append('rect')
-      .attr('x', -5)
-      .attr('y', -5)
-      .attr('width', MARGIN.right - 10)
-      .attr('height', legendContainerHeight + 10)
+      .attr('x', -10)
+      .attr('y', -15)
+      .attr('width', MARGIN.right - 15)
+      .attr('height', legendContainerHeight + 30)
       .attr('fill', 'white')
-      .attr('opacity', 0.7)
-      .attr('rx', 5);
+      .attr('opacity', 0.95)
+      .attr('rx', 8)
+      .attr('stroke', '#e5e7eb')
+      .attr('stroke-width', 1)
+      .style('filter', 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))');
+      
+    // Add title for the legend with better styling
+    legendContainer.append('text')
+      .attr('x', 5)
+      .attr('y', -2)
+      .style('font-size', '13px')
+      .style('font-weight', '700')
+      .style('fill', '#1f2937')
+      .text('Countries');
+    
+    legendContainer.append('text')
+      .attr('x', 5)
+      .attr('y', 12)
+      .style('font-size', '10px')
+      .style('fill', '#6b7280')
+      .text('(click to toggle)');
       
     // Calculate if we need to show scrollable legend for too many countries
     const hasScrollableLegend = displayData.length > 15;
@@ -223,62 +372,90 @@ const EmploymentTrendLineChart = ({
       .enter()
       .append('g')
       .attr('class', 'legend-line')
-      .attr('transform', (d, i) => `translate(0, ${i * legendItemHeight})`)
+      .attr('transform', (d, i) => `translate(0, ${25 + i * legendItemHeight})`)
       // Hide items that would overflow the container
-      .attr('opacity', (d, i) => i < visibleLegendItems ? 1 : hasScrollableLegend ? 0 : 1);
+      .attr('opacity', (d, i) => i < visibleLegendItems ? 1 : hasScrollableLegend ? 0 : 1)
+      .style('cursor', 'pointer');
 
-    // Color box for each legend item
-    legend.append('rect')
-      .attr('x', 0)
-      .attr('width', 12)
-      .attr('height', 12)
-      .attr('fill', d => colorScale(d.countryCode));
+    // Enhanced color indicators
+    legend.append('circle')
+      .attr('cx', 8)
+      .attr('cy', 6)
+      .attr('r', 6)
+      .attr('fill', d => colorScale(d.countryCode))
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', 2)
+      .style('filter', 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))');
 
-    // Legend text with country name and interactivity
+    // Enhanced legend text with better interactivity
     legend.append('text')
       .attr('x', 20)
       .attr('y', 10)
       .attr('dy', '.35em')
       .style('font-size', '11px')
+      .style('font-weight', '500')
       .style('text-anchor', 'start')
-      .style('cursor', 'pointer')
-      .text(d => d.countryName.length > 18 ? d.countryName.substring(0, 16) + "..." : d.countryName)
+      .style('fill', '#374151')
+      .text(d => d.countryName.length > 16 ? d.countryName.substring(0, 14) + "..." : d.countryName)
       .on('mouseover', function(event, d) {
         // Dim all lines
-        d3.selectAll(`.line`).style('opacity', '0.2');
+        d3.selectAll(`.line`).style('opacity', '0.3');
         // Highlight this line
-        d3.select(`.line-${d.countryCode}`).style('opacity', '1').attr('stroke-width', '3');
+        d3.select(`.line-${d.countryCode}`).style('opacity', '1').attr('stroke-width', '4');
         // Highlight the dots
-        d3.selectAll(`.dot-${d.countryCode}`).attr('r', 4).style('opacity', '1');
+        d3.selectAll(`.dot-${d.countryCode}`).attr('r', 5).style('opacity', '1');
+        
+        // Highlight legend item
+        d3.select(this).select('circle')
+          .transition()
+          .duration(200)
+          .attr('r', 8)
+          .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25))');
+        
+        d3.select(this).select('text')
+          .style('font-weight', '700')
+          .style('fill', '#1f2937');
       })
       .on('mouseout', function() {
         // Restore all lines
-        d3.selectAll(`.line`).style('opacity', '1').attr('stroke-width', '2');
+        d3.selectAll(`.line`).style('opacity', '1').attr('stroke-width', '3');
         // Reset dots
-        d3.selectAll(`circle[class^="dot-"]`).attr('r', 3).style('opacity', 0.7);
+        d3.selectAll(`circle[class^="dot-"]`).attr('r', 4).style('opacity', 0.9);
+        
+        // Reset legend item
+        d3.select(this).select('circle')
+          .transition()
+          .duration(200)
+          .attr('r', 6)
+          .style('filter', 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))');
+        
+        d3.select(this).select('text')
+          .style('font-weight', '500')
+          .style('fill', '#374151');
       })
       .on('click', function(event, d) {
         // Toggle visibility of this country
         toggleCountryVisibility(d.countryCode);
       });
-        // Add title for the legend
-    legendContainer.append('text')
-      .attr('x', 0)
-      .attr('y', -10)
-      .style('font-size', '12px')
-      .style('font-weight', 'bold')
-      .text('Countries (click to hide)');
-    
-    // If we have many countries, add page indicators for the legend
+    // Enhanced scroll indication for many countries
     if (hasScrollableLegend) {
-      // Add "scroll indication" text
+      // Add elegant "more countries" indicator
       legendContainer.append('text')
-        .attr('x', MARGIN.right / 2)
-        .attr('y', legendContainerHeight + 15)
+        .attr('x', MARGIN.right / 2 - 10)
+        .attr('y', legendContainerHeight + 20)
         .attr('text-anchor', 'middle')
         .style('font-size', '10px')
-        .style('fill', '#666')
+        .style('font-weight', '600')
+        .style('fill', '#6b7280')
         .text(`Showing ${visibleLegendItems} of ${displayData.length} countries`);
+        
+      legendContainer.append('text')
+        .attr('x', MARGIN.right / 2 - 10)
+        .attr('y', legendContainerHeight + 32)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '9px')
+        .style('fill', '#9ca3af')
+        .text('Scroll to see more');
     }
       
     return () => {

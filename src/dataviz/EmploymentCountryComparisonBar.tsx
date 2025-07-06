@@ -5,7 +5,7 @@ import { EmploymentCountryComparisonBarProps, EmploymentDataPoint } from '../lib
 import { formatSIAxis, wrapText } from '../lib/d3-utils'; // Impor utilitas
 
 // Definisikan margin di sini atau impor dari file constants
-const MARGIN = { top: 30, right: 30, bottom: 100, left: 150 }; // Tingkatkan left margin untuk nama negara panjang
+const MARGIN = { top: 30, right: 80, bottom: 100, left: 150 }; // Tingkatkan right margin untuk legend
 
 const EmploymentCountryComparisonBar = ({ data, width, height }: EmploymentCountryComparisonBarProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);

@@ -22,7 +22,7 @@ interface TooltipData {
   type: 'full-time' | 'part-time';
 }
 
-const MARGIN = { top: 60, right: 120, bottom: 50, left: 150 };
+const MARGIN = { top: 60, right: 160, bottom: 50, left: 150 };
 
 const EmploymentCompositionDivergingBar: React.FC<EmploymentCompositionDivergingBarProps> = ({ 
   data, 

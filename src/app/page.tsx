@@ -34,6 +34,7 @@ import {
 // ... (import lainnya tetap sama)
 import EmploymentCompositionDivergingBar from '../dataviz/EmploymentCompositionDivergingBar';
 import EmploymentTrendLineChart from '../dataviz/EmploymentTrendLineChart';
+import EmploymentBubbleChart from '../dataviz/EmploymentBubbleChart';
 import AgeCompositionBarChart from '../dataviz/AgeCompositionBarChart';
 import GenderDisparityLineChart from '../dataviz/GenderDisparityLineChart'; 
 import EmploymentRatioTrendChart from '../dataviz/EmploymentRatioTrendChart'; 
@@ -122,6 +123,7 @@ export default function HomePage() {
   
   const { ref: chart1ContainerRef, dimensions: chart1Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart2ContainerRef, dimensions: chart2Dimensions } = useResizeObserver<HTMLDivElement>();
+  const { ref: chart2BubbleContainerRef, dimensions: chart2BubbleDimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart3ContainerRef, dimensions: chart3Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart4ContainerRef, dimensions: chart4Dimensions } = useResizeObserver<HTMLDivElement>();
   const { ref: chart5ContainerRef, dimensions: chart5Dimensions } = useResizeObserver<HTMLDivElement>();
@@ -132,6 +134,9 @@ export default function HomePage() {
   const [activeCountryPill, setActiveCountryPill] = useState<string | undefined>(undefined);
   const [trendChartCountryPill, setTrendChartCountryPill] = useState<string | undefined>(undefined);
   const [selectedCountriesForLine, setSelectedCountriesForLine] = useState<string[]>([]);
+  
+  // State untuk toggle chart type
+  const [chartViewType, setChartViewType] = useState<'trends' | 'composition'>('composition');
 
 
   useEffect(() => {
@@ -447,83 +452,54 @@ export default function HomePage() {
 
       <Separator className="my-12" /> {/* */}
       
-      {/* Visualisasi Kedua: Line Chart Tren */}
+      {/* Visualisasi Kedua: Employment Structure Visualization */}
       <div className="my-12">
-        <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Total Employment Trends Over Time</h3>
-        <p className="text-lg mb-4 leading-relaxed text-slate-800">Economic stories unfold over time, revealing the ebb and flow of opportunity across Pacific nations.</p>
+        <h3 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Employment Structure Visualization</h3>
+        <p className="text-lg mb-4 leading-relaxed text-slate-800">Interactive bubble chart revealing the relationship between workforce size, part-time employment ratios, and regional employment patterns across Pacific Island nations.</p>
         <div className="mt-6 mb-8">
           <p className="text-lg leading-relaxed text-slate-800">
-            Behind every employment statistic lies a human story of progress, challenge, and adaptation. 
-            The trajectory of <span className="font-semibold text-slate-900"> workforce growth</span> in Pacific countries 
-            reflects not just economic cycles, but the resilience of communities navigating global changes, 
-            natural events, and evolving industries. Some nations experience steady climbs, others face periodic adjustments, 
-            and a few showcase remarkable transformation—each path offering insights into the complex interplay 
-            between geography, policy, and prosperity in the Pacific region.
+            This dynamic bubble chart presents a comprehensive view of employment structures across Pacific Island nations. 
+            Each bubble represents a country where the <span className="font-semibold text-slate-900">bubble size reflects total workforce participation</span>, 
+            while the <span className="font-semibold text-slate-900">horizontal position indicates part-time employment ratios</span>. 
+            Countries positioned further right demonstrate higher proportions of part-time workers, revealing diverse approaches to 
+            <strong> workforce flexibility and economic development</strong>. The visualization enables quick identification of 
+            employment patterns, from nations with robust full-time employment cultures to those embracing more flexible work arrangements, 
+            providing insights into the economic strategies and labor market preferences shaping the Pacific region.
           </p>
-        </div>        {/* Trend Chart Country Filter */}
-        {allCountryCodesForFilter.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6 justify-center items-center py-4 bg-slate-50 rounded-lg shadow">
-            <Button
-              key="trend-all"
-              variant={trendChartCountryPill === 'all' ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTrendChartCountryPill('all')}
-              className={`transition-all duration-150 ease-in-out text-xs md:text-sm ${
-                trendChartCountryPill === 'all'
-                ? 'bg-slate-900 text-white hover:bg-slate-800' 
-                : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-300'
-              }`}
-            >
-              All Countries
-            </Button>
-            {allCountryCodesForFilter.map((country) => (
-              <Button
-                key={`trend-${country.code}`}
-                variant={trendChartCountryPill === country.code ? "default" : "outline"}
-                size="sm"
-                onClick={() => setTrendChartCountryPill(country.code)}
-                className={`transition-all duration-150 ease-in-out text-xs md:text-sm ${
-                  trendChartCountryPill === country.code 
-                  ? 'bg-slate-900 text-white hover:bg-slate-800' 
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-300'
-                }`}
-              >
-                {country.name}
-              </Button>
-            ))}
+        </div>
+
+        <div className="mb-12">
+          <div className="min-h-[600px] relative">
+            {loadingBar && <Skeleton className="w-full h-[500px]" />}
+            {!loadingBar && employmentDataBar.length > 0 && (
+              <div ref={chart2BubbleContainerRef} className="w-full h-[500px] relative z-0">
+                {chart2BubbleDimensions.width > 0 && chart2BubbleDimensions.height > 0 && (
+                     <EmploymentBubbleChart
+                        data={employmentDataBar} 
+                        width={chart2BubbleDimensions.width} 
+                        height={chart2BubbleDimensions.height}
+                     />
+                )}
+              </div>
+            )}
+            {!loadingBar && employmentDataBar.length === 0 && (
+               <p className="text-center py-10 text-slate-600">
+                  {error && error.includes("Bar Chart") ? "Failed to load employment composition data." : "No employment composition data to display."}
+                </p>
+            )}
           </div>
-        )}
-        
-        <div className="min-h-[550px]">
-          {loadingLine && <Skeleton className="w-full h-[450px]" />}
-          {!loadingLine && employmentDataLine.length > 0 && trendChartCountryPill && (
-            <div ref={chart2ContainerRef} className="w-full h-[450px]">
-              {chart2Dimensions.width > 0 && chart2Dimensions.height > 0 && (
-                   <EmploymentTrendLineChart
-                      data={employmentDataLine} 
-                      width={chart2Dimensions.width} 
-                      height={chart2Dimensions.height}
-                      selectedCountryCodes={selectedCountriesForLine}
-                   />
-              )}
+          {!loadingBar && employmentDataBar.length > 0 && (
+            <div className="mt-6">
+              <p className="text-base leading-relaxed text-slate-600 italic">
+                This interactive bubble visualization effectively demonstrates how Pacific Island nations structure their employment markets. 
+                Larger bubbles indicate countries with greater total workforce participation, while positioning along the horizontal axis reveals 
+                the balance between full-time and part-time employment arrangements. The 50% reference line serves as a benchmark to identify 
+                whether countries lean toward predominantly full-time or part-time employment cultures, offering insights into regional economic 
+                strategies and workforce flexibility approaches.
+              </p>
             </div>
           )}
-          {!loadingLine && (employmentDataLine.length === 0 || !trendChartCountryPill) && (
-             <p className="text-center py-10 text-slate-600">
-                {error && error.includes("Line Chart") ? "Failed to load trend data." : 
-                 !trendChartCountryPill ? "Please select a country using the filters above." : "No trend data to display."}
-              </p>
-          )}
         </div>
-        {!loadingLine && employmentDataLine.length > 0 && activeCountryPill && (
-          <div className="mt-6">
-            <p className="text-base leading-relaxed text-slate-600 italic">
-              Employment trajectories across the Pacific reveal diverse 
-              economic narratives—some countries demonstrate consistent growth patterns while others show cyclical fluctuations, 
-              highlighting the varied resilience and adaptability of island economies to both regional and global influences.
-            </p>
-          </div>
-        )}
       </div>
 
       <Separator className="my-12" /> {/* */}
