@@ -401,8 +401,8 @@ export default function HomePage() {
         </div>
         
         <div className="absolute bottom-16 right-6 text-xs text-gray-500">
-          <p>A project by <span className="font-medium">Yan Holtz</span> and <span className="font-medium">Joseph Barbier</span></p>
-          <p>July 2024</p>
+          <p>A project by <span className="font-medium">riffatns</span></p>
+          <p>July 2025</p>
         </div>
       </div>
 
